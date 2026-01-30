@@ -11,10 +11,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **BOT-01**: User can create a bot with name, AI provider, model, API key, channel type, and channel credentials
 - [ ] **BOT-02**: User can view list of all bots with current status (running/stopped/error)
-- [ ] **BOT-03**: User can start a stopped bot
-- [ ] **BOT-04**: User can stop a running bot
-- [ ] **BOT-05**: User can restart a running bot
-- [ ] **BOT-06**: User can delete a bot (stops container, removes secrets)
+- [x] **BOT-03**: User can start a stopped bot
+- [x] **BOT-04**: User can stop a running bot
+- [x] **BOT-05**: User can restart a running bot
+- [x] **BOT-06**: User can delete a bot (stops container, removes secrets)
 - [ ] **BOT-07**: User can view bot detail page showing configuration
 
 ### Logging
@@ -30,7 +30,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INF-01**: Minimal OpenClaw Docker image exists for bot containers
+- [x] **INF-01**: Minimal OpenClaw Docker image exists for bot containers
 - [x] **INF-02**: SQLite database stores bot metadata
 - [ ] **INF-03**: Health check endpoint available at /health
 
@@ -78,11 +78,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INF-02 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
-| INF-01 | Phase 2 | Pending |
-| BOT-03 | Phase 2 | Pending |
-| BOT-04 | Phase 2 | Pending |
-| BOT-05 | Phase 2 | Pending |
-| BOT-06 | Phase 2 | Pending |
+| INF-01 | Phase 2 | Complete |
+| BOT-03 | Phase 2 | Complete |
+| BOT-04 | Phase 2 | Complete |
+| BOT-05 | Phase 2 | Complete |
+| BOT-06 | Phase 2 | Complete |
 | SEC-01 | Phase 3 | Pending |
 | BOT-01 | Phase 3 | Pending |
 | BOT-02 | Phase 3 | Pending |
@@ -101,4 +101,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-30*
-*Last updated: 2026-01-30 after Phase 1 completion*
+*Last updated: 2026-01-30 after Phase 2 completion*

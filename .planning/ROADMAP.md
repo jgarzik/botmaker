@@ -13,7 +13,7 @@ BotMaker delivers a web UI for managing OpenClaw bot containers through five pha
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Database schema and secrets filesystem infrastructure
-- [ ] **Phase 2: Docker Integration** - Container lifecycle operations and OpenClaw image
+- [x] **Phase 2: Docker Integration** - Container lifecycle operations and OpenClaw image
 - [ ] **Phase 3: API Layer** - Fastify routes, authentication, and SSE log streaming
 - [ ] **Phase 4: Frontend Dashboard** - React UI for bot management
 - [ ] **Phase 5: MVP Polish** - Error handling, health checks, and production hardening
@@ -48,8 +48,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - DockerService implementation with container types and error handling
-- [ ] 02-02-PLAN.md - Docker integration verification with test script
+- [x] 02-01-PLAN.md - DockerService implementation with container types and error handling
+- [x] 02-02-PLAN.md - Docker integration verification with test script
 
 ### Phase 3: API Layer
 **Goal**: HTTP API exposes all bot operations with authentication and real-time logs
@@ -104,7 +104,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-30 |
-| 2. Docker Integration | 0/2 | Not started | - |
+| 2. Docker Integration | 2/2 | Complete | 2026-01-30 |
 | 3. API Layer | 0/? | Not started | - |
 | 4. Frontend Dashboard | 0/? | Not started | - |
 | 5. MVP Polish | 0/? | Not started | - |
