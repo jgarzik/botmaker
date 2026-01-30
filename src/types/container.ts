@@ -37,5 +37,4 @@ export interface ContainerInfo {
 export interface ContainerConfig {
   image: string;
   environment: string[];
-  secretsPath: string;
 }
