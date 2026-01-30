@@ -90,14 +90,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOG-01 | Phase 3 | Pending |
 | LOG-02 | Phase 3 | Pending |
 | INF-03 | Phase 3 | Pending |
-| — | Phase 4 | Pending |
-| — | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 13 total
-- Mapped to phases: 13
-- Unmapped: 0 ✓
+- v1 requirements: 15 total
+- Mapped to phases: 15
+- Unmapped: 0
+
+**Phase 4 (Frontend Dashboard):** No unique requirements - implements UI for Phase 3 API capabilities
+**Phase 5 (MVP Polish):** No unique requirements - refinement and production hardening
 
 ---
 *Requirements defined: 2026-01-30*
-*Last updated: 2026-01-30 after initial definition*
+*Last updated: 2026-01-30 after roadmap creation*
