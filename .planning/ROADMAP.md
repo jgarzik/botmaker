@@ -12,7 +12,7 @@ BotMaker delivers a web UI for managing OpenClaw bot containers through five pha
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Database schema and secrets filesystem infrastructure
+- [x] **Phase 1: Foundation** - Database schema and secrets filesystem infrastructure
 - [ ] **Phase 2: Docker Integration** - Container lifecycle operations and OpenClaw image
 - [ ] **Phase 3: API Layer** - Fastify routes, authentication, and SSE log streaming
 - [ ] **Phase 4: Frontend Dashboard** - React UI for bot management
@@ -32,8 +32,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Bot types and SQLite database module
-- [ ] 01-02-PLAN.md - Secrets manager with Unix permissions
+- [x] 01-01-PLAN.md - Bot types and SQLite database module
+- [x] 01-02-PLAN.md - Secrets manager with Unix permissions
 
 ### Phase 2: Docker Integration
 **Goal**: Container lifecycle operations work independently of API layer
@@ -102,7 +102,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 2/2 | Complete | 2026-01-30 |
 | 2. Docker Integration | 0/? | Not started | - |
 | 3. API Layer | 0/? | Not started | - |
 | 4. Frontend Dashboard | 0/? | Not started | - |
