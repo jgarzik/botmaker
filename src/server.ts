@@ -198,15 +198,25 @@ export async function buildServer(): Promise<FastifyInstance> {
       // Use host paths for Docker bind mounts (Docker daemon runs on host, not in container)
       const hostWorkspacePath = join(hostDataDir, 'bots', bot.id);
       const hostSecretsPath = join(hostSecretsDir, bot.id);
+      // Build environment variables including channel-specific tokens
+      const environment = [
+        `BOT_ID=${bot.id}`,
+        `BOT_NAME=${body.name}`,
+        `AI_PROVIDER=${body.ai_provider}`,
+        `AI_MODEL=${body.model}`,
+        `PORT=${port}`,
+      ];
+
+      // Add channel token as environment variable (OpenClaw reads these)
+      if (body.channel_type === 'telegram') {
+        environment.push(`TELEGRAM_BOT_TOKEN=${body.channel_token}`);
+      } else if (body.channel_type === 'discord') {
+        environment.push(`DISCORD_TOKEN=${body.channel_token}`);
+      }
+
       const containerId = await docker.createContainer(bot.id, {
         image: config.openclawImage,
-        environment: [
-          `BOT_ID=${bot.id}`,
-          `BOT_NAME=${body.name}`,
-          `AI_PROVIDER=${body.ai_provider}`,
-          `AI_MODEL=${body.model}`,
-          `PORT=${port}`,
-        ],
+        environment,
         port,
         hostWorkspacePath,
         hostSecretsPath,
