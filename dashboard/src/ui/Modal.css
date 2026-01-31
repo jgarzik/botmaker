@@ -80,7 +80,7 @@
 /* Content */
 .modal-content {
   padding: var(--space-lg);
-  overflow-y: auto;
+  overflow: hidden auto;
   flex: 1;
 }
 
