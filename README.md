@@ -5,7 +5,7 @@ Web UI for managing OpenClaw AI chatbots in Docker containers.
 ## Features
 
 - **Multi-AI Provider Support** - OpenAI, Anthropic, Google Gemini, Venice
-- **Multi-Channel Deployment** - Telegram, Discord
+- **Multi-Channel Wizard** - Telegram, Discord (all others supported by chatting with your bot post-setup)
 - **Container Isolation** - Each bot runs in its own Docker container
 - **Dashboard** - Creation wizard, monitoring, diagnostics
 - **Secrets Management** - Per-bot credential isolation
