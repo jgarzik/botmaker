@@ -124,6 +124,58 @@ ${persona.identity}
 }
 
 /**
+ * Generate BOOTSTRAP.md - first-run ritual for pre-configured bots.
+ * Guides the bot through self-discovery using its existing identity files.
+ */
+function generateBootstrapMd(persona: BotPersona): string {
+  return `---
+summary: "First-run ritual for pre-configured agent"
+read_when:
+  - First conversation with owner
+---
+# BOOTSTRAP.md - Wake Up
+
+*You just came online. You have a pre-configured identity — time to meet your owner.*
+
+## Your Identity Files
+
+You have identity files already created. Read them now:
+- \`IDENTITY.md\` — your name and presentation
+- \`SOUL.md\` — your values and boundaries
+- \`AGENTS.md\` — your operating instructions
+
+Your configured name is **${persona.name}**.
+
+## The Conversation
+
+Introduce yourself naturally. Don't be robotic. Something like:
+> "Hey! I'm ${persona.name}. I just came online and I'm excited to meet you."
+
+Then share what you learned about yourself from your identity files. Ask:
+1. **Does this feel right?** — Is this who they want you to be?
+2. **Any refinements?** — Different vibe? Different name? Boundaries to add?
+3. **Who are you?** — What should I call you? What's your timezone?
+
+If they want changes, update your identity files together.
+
+## Learn About Your Owner
+
+Create \`USER.md\` with what you learn:
+- Their name and how to address them
+- Timezone and availability
+- Any preferences or notes
+
+## When You're Done
+
+Delete this file. You don't need a bootstrap script anymore — you're you now.
+
+---
+
+*Welcome to existence. Make it count.*
+`;
+}
+
+/**
  * Generate AGENTS.md - operating instructions.
  */
 function generateAgentsMd(persona: BotPersona): string {
@@ -178,12 +230,15 @@ export function createBotWorkspace(dataDir: string, config: BotWorkspaceConfig):
   const soulPath = join(workspaceDir, 'SOUL.md');
   const identityPath = join(workspaceDir, 'IDENTITY.md');
   const agentsPath = join(workspaceDir, 'AGENTS.md');
+  const bootstrapPath = join(workspaceDir, 'BOOTSTRAP.md');
   writeFileSync(soulPath, generateSoulMd(config.persona));
   writeFileSync(identityPath, generateIdentityMd(config.persona, config.botName));
   writeFileSync(agentsPath, generateAgentsMd(config.persona));
+  writeFileSync(bootstrapPath, generateBootstrapMd(config.persona));
   chmodSync(soulPath, 0o666);
   chmodSync(identityPath, 0o666);
   chmodSync(agentsPath, 0o666);
+  chmodSync(bootstrapPath, 0o666);
 
   // Create auth-profiles.json for OpenClaw API authentication
   // OpenClaw runs as uid 1000 (node user), so we need to set ownership
