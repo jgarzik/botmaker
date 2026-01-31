@@ -4,7 +4,7 @@
  * Generate configuration files for OpenClaw bot workspaces.
  */
 
-import { mkdirSync, writeFileSync, chmodSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, chmodSync, chownSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface BotPersona {
@@ -184,18 +184,26 @@ export function createBotWorkspace(dataDir: string, config: BotWorkspaceConfig):
   chmodSync(agentsPath, 0o666);
 
   // Create auth-profiles.json for OpenClaw API authentication
+  // OpenClaw runs as uid 1000 (node user), so we need to set ownership
+  const OPENCLAW_UID = 1000;
+  const OPENCLAW_GID = 1000;
+
   const agentDir = join(botDir, 'agents', 'main', 'agent');
   mkdirSync(agentDir, { recursive: true, mode: 0o777 });
   chmodSync(agentDir, 0o777);
+  chownSync(agentDir, OPENCLAW_UID, OPENCLAW_GID);
+
   const authProfilesPath = join(agentDir, 'auth-profiles.json');
   const authProfiles = generateAuthProfiles(config.aiProvider, config.apiKey);
   writeFileSync(authProfilesPath, JSON.stringify(authProfiles, null, 2));
   chmodSync(authProfilesPath, 0o666);
+  chownSync(authProfilesPath, OPENCLAW_UID, OPENCLAW_GID);
 
   // Pre-create sessions directory for OpenClaw runtime use
   const sessionsDir = join(botDir, 'agents', 'main', 'sessions');
   mkdirSync(sessionsDir, { recursive: true, mode: 0o777 });
   chmodSync(sessionsDir, 0o777);
+  chownSync(sessionsDir, OPENCLAW_UID, OPENCLAW_GID);
 }
 
 /**
