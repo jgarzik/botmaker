@@ -75,6 +75,12 @@
   font-family: var(--font-mono);
 }
 
+/* Bot link */
+.bot-card-link {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color-subtle);
+}
+
 /* Token display */
 .bot-card-token {
   padding: var(--space-sm) 0;

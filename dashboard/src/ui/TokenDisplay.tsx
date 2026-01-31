@@ -6,17 +6,46 @@ interface TokenDisplayProps {
   label?: string;
 }
 
+/**
+ * Copy text to clipboard with fallback for non-HTTPS contexts.
+ * The Clipboard API requires secure context (HTTPS or localhost).
+ */
+function copyToClipboard(text: string): boolean {
+  // Try modern Clipboard API first (works on HTTPS/localhost)
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  // Fallback: create temporary textarea and use execCommand
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    document.execCommand('copy');
+    return true;
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 export function TokenDisplay({ token, label = 'Access Token' }: TokenDisplayProps) {
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(token);
+  const handleCopy = useCallback(() => {
+    const success = copyToClipboard(token);
+    if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy token:', err);
     }
   }, [token]);
 

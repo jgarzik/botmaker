@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Panel } from '../ui/Panel';
 import { TokenDisplay } from '../ui/TokenDisplay';
+import { BotLink } from '../ui/BotLink';
 import './BotCard.css';
 
 interface BotCardProps {
@@ -88,6 +89,12 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
           </div>
         )}
       </div>
+
+      {bot.port && isRunning && (
+        <div className="bot-card-link">
+          <BotLink port={bot.port} />
+        </div>
+      )}
 
       {bot.gateway_token && (
         <div className="bot-card-token">
