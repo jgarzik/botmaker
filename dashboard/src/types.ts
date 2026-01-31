@@ -63,3 +63,39 @@ export interface CleanupReport {
   workspacesRemoved: number;
   secretsRemoved: number;
 }
+
+export type SessionScope = 'user' | 'channel' | 'global';
+
+export interface WizardFeatures {
+  commands: boolean;
+  tts: boolean;
+  ttsVoice?: string;
+  sandbox: boolean;
+  sandboxTimeout?: number;
+  sessionScope: SessionScope;
+}
+
+export interface ProviderConfigInput {
+  providerId: string;
+  apiKey: string;
+  model: string;
+}
+
+export interface ChannelConfigInput {
+  channelType: string;
+  token: string;
+}
+
+export interface CreateBotInputExtended {
+  name: string;
+  emoji: string;
+  avatarUrl?: string;
+  providers: ProviderConfigInput[];
+  primaryProvider: string;
+  channels: ChannelConfigInput[];
+  persona: {
+    name: string;
+    soulMarkdown: string;
+  };
+  features: WizardFeatures;
+}

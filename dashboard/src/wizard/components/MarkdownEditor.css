@@ -1,0 +1,47 @@
+.markdown-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.markdown-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.markdown-editor-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.markdown-editor-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.markdown-editor-textarea {
+  min-height: 300px;
+  padding: var(--space-md);
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all var(--transition-fast);
+}
+
+.markdown-editor-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+}
+
+.markdown-editor-textarea::placeholder {
+  color: var(--text-muted);
+}

@@ -1,4 +1,4 @@
-import type { Bot, CreateBotInput, ContainerStats, OrphanReport, CleanupReport } from './types';
+import type { Bot, CreateBotInput, CreateBotInputExtended, ContainerStats, OrphanReport, CleanupReport } from './types';
 
 const API_BASE = '/api';
 
@@ -22,6 +22,15 @@ export async function fetchBot(id: string): Promise<Bot> {
 }
 
 export async function createBot(input: CreateBotInput): Promise<Bot> {
+  const response = await fetch(`${API_BASE}/bots`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return handleResponse<Bot>(response);
+}
+
+export async function createBotExtended(input: CreateBotInputExtended): Promise<Bot> {
   const response = await fetch(`${API_BASE}/bots`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

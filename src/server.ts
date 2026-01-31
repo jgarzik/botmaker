@@ -44,6 +44,33 @@ interface CreateBotBody {
   };
 }
 
+type SessionScope = 'user' | 'channel' | 'global';
+
+interface CreateBotBodyExtended {
+  name: string;
+  emoji: string;
+  avatarUrl?: string;
+  providers: Array<{ providerId: string; apiKey: string; model: string }>;
+  primaryProvider: string;
+  channels: Array<{ channelType: string; token: string }>;
+  persona: {
+    name: string;
+    soulMarkdown: string;
+  };
+  features: {
+    commands: boolean;
+    tts: boolean;
+    ttsVoice?: string;
+    sandbox: boolean;
+    sandboxTimeout?: number;
+    sessionScope: SessionScope;
+  };
+}
+
+function isExtendedBody(body: CreateBotBody | CreateBotBodyExtended): body is CreateBotBodyExtended {
+  return 'providers' in body && Array.isArray(body.providers);
+}
+
 /**
  * Resolve host paths for Docker bind mounts.
  * If volume names are configured, inspect them to get actual host paths.
@@ -128,9 +155,138 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Create bot
-  server.post<{ Body: CreateBotBody }>('/api/bots', async (request, reply) => {
+  server.post<{ Body: CreateBotBody | CreateBotBodyExtended }>('/api/bots', async (request, reply) => {
     const body = request.body;
 
+    // Handle extended format (new wizard)
+    if (isExtendedBody(body)) {
+      // Validate extended format
+      if (!body.name) {
+        reply.code(400);
+        return { error: 'Missing required field: name' };
+      }
+
+      if (!body.providers || body.providers.length === 0) {
+        reply.code(400);
+        return { error: 'At least one provider is required' };
+      }
+
+      if (!body.channels || body.channels.length === 0) {
+        reply.code(400);
+        return { error: 'At least one channel is required' };
+      }
+
+      // Check for duplicate name
+      if (getBotByName(body.name)) {
+        reply.code(409);
+        return { error: 'Bot with this name already exists' };
+      }
+
+      // Use primary provider or first provider
+      const primaryProvider = body.providers.find(p => p.providerId === body.primaryProvider) || body.providers[0];
+      const primaryChannel = body.channels[0];
+
+      // Get next available port
+      const port = getNextBotPort(config.botPortStart);
+      const gatewayToken = randomBytes(32).toString('hex');
+
+      // Create bot record
+      const bot = createBot({
+        name: body.name,
+        ai_provider: primaryProvider.providerId,
+        model: primaryProvider.model,
+        channel_type: primaryChannel.channelType as 'telegram' | 'discord',
+        port,
+        gateway_token: gatewayToken,
+      });
+
+      try {
+        // Store secrets for all providers
+        for (const provider of body.providers) {
+          const keyName = provider.providerId === primaryProvider.providerId
+            ? 'AI_API_KEY'
+            : `${provider.providerId.toUpperCase()}_API_KEY`;
+          writeSecret(bot.id, keyName, provider.apiKey);
+        }
+
+        // Store channel tokens
+        for (const channel of body.channels) {
+          const tokenName = channel.channelType === 'telegram' ? 'TELEGRAM_TOKEN'
+            : channel.channelType === 'discord' ? 'DISCORD_TOKEN'
+            : `${channel.channelType.toUpperCase()}_TOKEN`;
+          writeSecret(bot.id, tokenName, channel.token);
+        }
+
+        // Create workspace with extended persona (use soulMarkdown)
+        createBotWorkspace(config.dataDir, {
+          botId: bot.id,
+          botName: body.name,
+          aiProvider: primaryProvider.providerId,
+          apiKey: primaryProvider.apiKey,
+          model: primaryProvider.model,
+          channel: {
+            type: primaryChannel.channelType as 'telegram' | 'discord',
+            token: primaryChannel.token,
+          },
+          persona: {
+            name: body.persona.name,
+            identity: body.persona.soulMarkdown || '',
+            description: body.emoji || '',
+          },
+          port,
+        });
+
+        // Build environment
+        const hostWorkspacePath = join(hostDataDir, 'bots', bot.id);
+        const hostSecretsPath = join(hostSecretsDir, bot.id);
+        const environment = [
+          `BOT_ID=${bot.id}`,
+          `BOT_NAME=${body.name}`,
+          `AI_PROVIDER=${primaryProvider.providerId}`,
+          `AI_MODEL=${primaryProvider.model}`,
+          `PORT=${port}`,
+        ];
+
+        // Add channel tokens
+        for (const channel of body.channels) {
+          if (channel.channelType === 'telegram') {
+            environment.push(`TELEGRAM_BOT_TOKEN=${channel.token}`);
+          } else if (channel.channelType === 'discord') {
+            environment.push(`DISCORD_TOKEN=${channel.token}`);
+          }
+        }
+
+        const containerId = await docker.createContainer(bot.id, {
+          image: config.openclawImage,
+          environment,
+          port,
+          hostWorkspacePath,
+          hostSecretsPath,
+          gatewayToken,
+        });
+
+        updateBot(bot.id, { container_id: containerId });
+        await docker.startContainer(bot.id);
+        updateBot(bot.id, { status: 'running' });
+
+        const updatedBot = getBot(bot.id);
+        reply.code(201);
+        return updatedBot;
+      } catch (err) {
+        try { await docker.removeContainer(bot.id); } catch {}
+        deleteBotWorkspace(config.dataDir, bot.id);
+        deleteBotSecrets(bot.id);
+        deleteBot(bot.id);
+
+        if (err instanceof ContainerError) {
+          reply.code(500);
+          return { error: `Container error: ${err.message}` };
+        }
+        throw err;
+      }
+    }
+
+    // Handle legacy format (original wizard)
     // Validate required fields
     if (!body.name || !body.ai_provider || !body.model || !body.channel_type) {
       reply.code(400);
