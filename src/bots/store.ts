@@ -10,6 +10,7 @@ import type { Bot, BotStatus } from '../types/bot.js';
 
 export interface CreateBotInput {
   name: string;
+  hostname: string;
   ai_provider: string;
   model: string;
   channel_type: string;
@@ -19,6 +20,7 @@ export interface CreateBotInput {
 
 export interface UpdateBotInput {
   name?: string;
+  hostname?: string;
   ai_provider?: string;
   model?: string;
   channel_type?: string;
@@ -40,15 +42,16 @@ export function createBot(input: CreateBotInput): Bot {
   const id = uuidv4();
 
   const stmt = db.prepare(`
-    INSERT INTO bots (id, name, ai_provider, model, channel_type, port, gateway_token, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO bots (id, name, hostname, ai_provider, model, channel_type, port, gateway_token, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, input.name, input.ai_provider, input.model, input.channel_type, input.port, input.gateway_token, 'created', now, now);
+  stmt.run(id, input.name, input.hostname, input.ai_provider, input.model, input.channel_type, input.port, input.gateway_token, 'created', now, now);
 
   return {
     id,
     name: input.name,
+    hostname: input.hostname,
     ai_provider: input.ai_provider,
     model: input.model,
     channel_type: input.channel_type,
@@ -88,6 +91,19 @@ export function getBotByName(name: string): Bot | null {
 }
 
 /**
+ * Get a bot by hostname.
+ *
+ * @param hostname - Bot hostname (DNS-compatible identifier)
+ * @returns The bot or null if not found
+ */
+export function getBotByHostname(hostname: string): Bot | null {
+  const db = getDb();
+  const stmt = db.prepare('SELECT * FROM bots WHERE hostname = ?');
+  const row = stmt.get(hostname) as Bot | undefined;
+  return row ?? null;
+}
+
+/**
  * List all bots.
  *
  * @returns Array of all bots
@@ -116,6 +132,10 @@ export function updateBot(id: string, input: UpdateBotInput): Bot | null {
   if (input.name !== undefined) {
     updates.push('name = ?');
     values.push(input.name);
+  }
+  if (input.hostname !== undefined) {
+    updates.push('hostname = ?');
+    values.push(input.hostname);
   }
   if (input.ai_provider !== undefined) {
     updates.push('ai_provider = ?');

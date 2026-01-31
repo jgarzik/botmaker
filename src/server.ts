@@ -16,6 +16,7 @@ import {
   createBot,
   getBot,
   getBotByName,
+  getBotByHostname,
   listBots,
   updateBot,
   deleteBot,
@@ -48,6 +49,7 @@ type SessionScope = 'user' | 'channel' | 'global';
 
 interface CreateBotBodyExtended {
   name: string;
+  hostname: string;
   emoji: string;
   avatarUrl?: string;
   providers: Array<{ providerId: string; apiKey: string; model: string }>;
@@ -126,7 +128,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     // Enrich with container status
     const enrichedBots = await Promise.all(
       bots.map(async (bot) => {
-        const containerStatus = await docker.getContainerStatus(bot.id);
+        const containerStatus = await docker.getContainerStatus(bot.hostname);
         return {
           ...bot,
           container_status: containerStatus,
@@ -138,15 +140,15 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Get single bot
-  server.get<{ Params: { id: string } }>('/api/bots/:id', async (request, reply) => {
-    const bot = getBot(request.params.id);
+  server.get<{ Params: { hostname: string } }>('/api/bots/:hostname', async (request, reply) => {
+    const bot = getBotByHostname(request.params.hostname);
 
     if (!bot) {
       reply.code(404);
       return { error: 'Bot not found' };
     }
 
-    const containerStatus = await docker.getContainerStatus(bot.id);
+    const containerStatus = await docker.getContainerStatus(bot.hostname);
 
     return {
       ...bot,
@@ -166,6 +168,17 @@ export async function buildServer(): Promise<FastifyInstance> {
         return { error: 'Missing required field: name' };
       }
 
+      if (!body.hostname) {
+        reply.code(400);
+        return { error: 'Missing required field: hostname' };
+      }
+
+      // Validate hostname format (DNS-compatible, max 64 chars)
+      if (!/^[a-z0-9-]{1,64}$/.test(body.hostname)) {
+        reply.code(400);
+        return { error: 'Hostname must be 1-64 lowercase letters, numbers, and hyphens' };
+      }
+
       if (!body.providers || body.providers.length === 0) {
         reply.code(400);
         return { error: 'At least one provider is required' };
@@ -176,10 +189,10 @@ export async function buildServer(): Promise<FastifyInstance> {
         return { error: 'At least one channel is required' };
       }
 
-      // Check for duplicate name
-      if (getBotByName(body.name)) {
+      // Check for duplicate hostname
+      if (getBotByHostname(body.hostname)) {
         reply.code(409);
-        return { error: 'Bot with this name already exists' };
+        return { error: 'Bot with this hostname already exists' };
       }
 
       // Use primary provider or first provider
@@ -193,6 +206,7 @@ export async function buildServer(): Promise<FastifyInstance> {
       // Create bot record
       const bot = createBot({
         name: body.name,
+        hostname: body.hostname,
         ai_provider: primaryProvider.providerId,
         model: primaryProvider.model,
         channel_type: primaryChannel.channelType as 'telegram' | 'discord',
@@ -201,12 +215,12 @@ export async function buildServer(): Promise<FastifyInstance> {
       });
 
       try {
-        // Store secrets for all providers
+        // Store secrets for all providers (using hostname for path)
         for (const provider of body.providers) {
           const keyName = provider.providerId === primaryProvider.providerId
             ? 'AI_API_KEY'
             : `${provider.providerId.toUpperCase()}_API_KEY`;
-          writeSecret(bot.id, keyName, provider.apiKey);
+          writeSecret(bot.hostname, keyName, provider.apiKey);
         }
 
         // Store channel tokens
@@ -214,12 +228,13 @@ export async function buildServer(): Promise<FastifyInstance> {
           const tokenName = channel.channelType === 'telegram' ? 'TELEGRAM_TOKEN'
             : channel.channelType === 'discord' ? 'DISCORD_TOKEN'
             : `${channel.channelType.toUpperCase()}_TOKEN`;
-          writeSecret(bot.id, tokenName, channel.token);
+          writeSecret(bot.hostname, tokenName, channel.token);
         }
 
         // Create workspace with extended persona (use soulMarkdown)
         createBotWorkspace(config.dataDir, {
           botId: bot.id,
+          botHostname: bot.hostname,
           botName: body.name,
           aiProvider: primaryProvider.providerId,
           apiKey: primaryProvider.apiKey,
@@ -236,9 +251,9 @@ export async function buildServer(): Promise<FastifyInstance> {
           port,
         });
 
-        // Build environment
-        const hostWorkspacePath = join(hostDataDir, 'bots', bot.id);
-        const hostSecretsPath = join(hostSecretsDir, bot.id);
+        // Build environment (using hostname for paths)
+        const hostWorkspacePath = join(hostDataDir, 'bots', bot.hostname);
+        const hostSecretsPath = join(hostSecretsDir, bot.hostname);
         const environment = [
           `BOT_ID=${bot.id}`,
           `BOT_NAME=${body.name}`,
@@ -256,7 +271,7 @@ export async function buildServer(): Promise<FastifyInstance> {
           }
         }
 
-        const containerId = await docker.createContainer(bot.id, {
+        const containerId = await docker.createContainer(bot.hostname, bot.id, {
           image: config.openclawImage,
           environment,
           port,
@@ -266,16 +281,16 @@ export async function buildServer(): Promise<FastifyInstance> {
         });
 
         updateBot(bot.id, { container_id: containerId });
-        await docker.startContainer(bot.id);
+        await docker.startContainer(bot.hostname);
         updateBot(bot.id, { status: 'running' });
 
         const updatedBot = getBot(bot.id);
         reply.code(201);
         return updatedBot;
       } catch (err) {
-        try { await docker.removeContainer(bot.id); } catch {}
-        deleteBotWorkspace(config.dataDir, bot.id);
-        deleteBotSecrets(bot.id);
+        try { await docker.removeContainer(bot.hostname); } catch {}
+        deleteBotWorkspace(config.dataDir, bot.hostname);
+        deleteBotSecrets(bot.hostname);
         deleteBot(bot.id);
 
         if (err instanceof ContainerError) {
@@ -303,10 +318,13 @@ export async function buildServer(): Promise<FastifyInstance> {
       return { error: 'Missing persona fields: name, identity, description' };
     }
 
-    // Check for duplicate name
-    if (getBotByName(body.name)) {
+    // Legacy format: name was DNS-compatible, use it as hostname
+    const hostname = body.name;
+
+    // Check for duplicate hostname
+    if (getBotByHostname(hostname)) {
       reply.code(409);
-      return { error: 'Bot with this name already exists' };
+      return { error: 'Bot with this hostname already exists' };
     }
 
     // Get next available port before creating bot record
@@ -318,6 +336,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     // Create bot record with port and gateway token
     const bot = createBot({
       name: body.name,
+      hostname,
       ai_provider: body.ai_provider,
       model: body.model,
       channel_type: body.channel_type,
@@ -326,18 +345,19 @@ export async function buildServer(): Promise<FastifyInstance> {
     });
 
     try {
-      // Store secrets
-      writeSecret(bot.id, 'AI_API_KEY', body.api_key);
+      // Store secrets (using hostname for path)
+      writeSecret(bot.hostname, 'AI_API_KEY', body.api_key);
 
       if (body.channel_type === 'telegram') {
-        writeSecret(bot.id, 'TELEGRAM_TOKEN', body.channel_token);
+        writeSecret(bot.hostname, 'TELEGRAM_TOKEN', body.channel_token);
       } else if (body.channel_type === 'discord') {
-        writeSecret(bot.id, 'DISCORD_TOKEN', body.channel_token);
+        writeSecret(bot.hostname, 'DISCORD_TOKEN', body.channel_token);
       }
 
       // Create workspace
       createBotWorkspace(config.dataDir, {
         botId: bot.id,
+        botHostname: bot.hostname,
         botName: body.name,
         aiProvider: body.ai_provider,
         apiKey: body.api_key,
@@ -350,10 +370,9 @@ export async function buildServer(): Promise<FastifyInstance> {
         port,
       });
 
-      // Create container
-      // Use host paths for Docker bind mounts (Docker daemon runs on host, not in container)
-      const hostWorkspacePath = join(hostDataDir, 'bots', bot.id);
-      const hostSecretsPath = join(hostSecretsDir, bot.id);
+      // Create container (using hostname for paths and container name)
+      const hostWorkspacePath = join(hostDataDir, 'bots', bot.hostname);
+      const hostSecretsPath = join(hostSecretsDir, bot.hostname);
       // Build environment variables including channel-specific tokens
       const environment = [
         `BOT_ID=${bot.id}`,
@@ -370,7 +389,7 @@ export async function buildServer(): Promise<FastifyInstance> {
         environment.push(`DISCORD_TOKEN=${body.channel_token}`);
       }
 
-      const containerId = await docker.createContainer(bot.id, {
+      const containerId = await docker.createContainer(bot.hostname, bot.id, {
         image: config.openclawImage,
         environment,
         port,
@@ -383,7 +402,7 @@ export async function buildServer(): Promise<FastifyInstance> {
       updateBot(bot.id, { container_id: containerId });
 
       // Start container
-      await docker.startContainer(bot.id);
+      await docker.startContainer(bot.hostname);
       updateBot(bot.id, { status: 'running' });
 
       const updatedBot = getBot(bot.id);
@@ -391,9 +410,9 @@ export async function buildServer(): Promise<FastifyInstance> {
       return updatedBot;
     } catch (err) {
       // Cleanup on failure - remove all resources
-      try { await docker.removeContainer(bot.id); } catch {}
-      deleteBotWorkspace(config.dataDir, bot.id);
-      deleteBotSecrets(bot.id);
+      try { await docker.removeContainer(bot.hostname); } catch {}
+      deleteBotWorkspace(config.dataDir, bot.hostname);
+      deleteBotSecrets(bot.hostname);
       deleteBot(bot.id);
 
       if (err instanceof ContainerError) {
@@ -406,8 +425,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Delete bot
-  server.delete<{ Params: { id: string } }>('/api/bots/:id', async (request, reply) => {
-    const bot = getBot(request.params.id);
+  server.delete<{ Params: { hostname: string } }>('/api/bots/:hostname', async (request, reply) => {
+    const bot = getBotByHostname(request.params.hostname);
 
     if (!bot) {
       reply.code(404);
@@ -416,7 +435,7 @@ export async function buildServer(): Promise<FastifyInstance> {
 
     try {
       // Remove container if exists
-      await docker.removeContainer(bot.id);
+      await docker.removeContainer(bot.hostname);
     } catch (err) {
       if (err instanceof ContainerError && err.code !== 'NOT_FOUND') {
         reply.code(500);
@@ -425,10 +444,10 @@ export async function buildServer(): Promise<FastifyInstance> {
     }
 
     // Delete workspace directory
-    deleteBotWorkspace(config.dataDir, bot.id);
+    deleteBotWorkspace(config.dataDir, bot.hostname);
 
     // Delete secrets
-    deleteBotSecrets(bot.id);
+    deleteBotSecrets(bot.hostname);
 
     // Delete bot record
     deleteBot(bot.id);
@@ -437,8 +456,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Start bot
-  server.post<{ Params: { id: string } }>('/api/bots/:id/start', async (request, reply) => {
-    const bot = getBot(request.params.id);
+  server.post<{ Params: { hostname: string } }>('/api/bots/:hostname/start', async (request, reply) => {
+    const bot = getBotByHostname(request.params.hostname);
 
     if (!bot) {
       reply.code(404);
@@ -446,7 +465,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     }
 
     try {
-      await docker.startContainer(bot.id);
+      await docker.startContainer(bot.hostname);
       updateBot(bot.id, { status: 'running' });
 
       return { success: true, status: 'running' };
@@ -460,8 +479,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Stop bot
-  server.post<{ Params: { id: string } }>('/api/bots/:id/stop', async (request, reply) => {
-    const bot = getBot(request.params.id);
+  server.post<{ Params: { hostname: string } }>('/api/bots/:hostname/stop', async (request, reply) => {
+    const bot = getBotByHostname(request.params.hostname);
 
     if (!bot) {
       reply.code(404);
@@ -469,7 +488,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     }
 
     try {
-      await docker.stopContainer(bot.id);
+      await docker.stopContainer(bot.hostname);
       updateBot(bot.id, { status: 'stopped' });
 
       return { success: true, status: 'stopped' };

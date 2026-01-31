@@ -1,8 +1,9 @@
 export type BotStatus = 'created' | 'running' | 'stopped' | 'error';
 
 export interface Bot {
-  id: string;           // UUID
-  name: string;         // Unique bot name
+  id: string;           // UUID (internal, hidden from API)
+  name: string;         // Free-form display name
+  hostname: string;     // DNS-compatible identifier (used for API routes, container names, paths)
   ai_provider: string;  // openai, anthropic, etc.
   model: string;        // gpt-4, claude-3, etc.
   channel_type: string; // slack, discord, telegram, etc.

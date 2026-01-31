@@ -29,6 +29,7 @@ export interface ContainerInfo {
   id: string;
   name: string;
   botId: string;
+  hostname: string;
   state: string;
   status: string; // Human-readable like "Up 2 hours"
 }
@@ -47,7 +48,7 @@ export interface ContainerConfig {
 
 /** Container resource statistics */
 export interface ContainerStats {
-  botId: string;
+  hostname: string;
   name: string;
   cpuPercent: number;
   memoryUsage: number;

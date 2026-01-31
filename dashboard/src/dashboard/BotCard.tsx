@@ -10,9 +10,9 @@ import './BotCard.css';
 
 interface BotCardProps {
   bot: Bot;
-  onStart: (id: string) => void;
-  onStop: (id: string) => void;
-  onDelete: (id: string) => void;
+  onStart: (hostname: string) => void;
+  onStop: (hostname: string) => void;
+  onDelete: (hostname: string) => void;
   loading: boolean;
 }
 
@@ -46,7 +46,7 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
 
   const handleDelete = () => {
     if (confirmDelete) {
-      onDelete(bot.id);
+      onDelete(bot.hostname);
       setConfirmDelete(false);
     } else {
       setConfirmDelete(true);
@@ -106,7 +106,7 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
         {isRunning ? (
           <Button
             size="sm"
-            onClick={() => onStop(bot.id)}
+            onClick={() => onStop(bot.hostname)}
             disabled={loading}
             loading={loading}
           >
@@ -116,7 +116,7 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
           <Button
             size="sm"
             variant="primary"
-            onClick={() => onStart(bot.id)}
+            onClick={() => onStart(bot.hostname)}
             disabled={loading}
             loading={loading}
           >

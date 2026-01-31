@@ -12,6 +12,7 @@ import { wrapDockerError } from './docker-errors.js';
 /** Label used to identify BotMaker-managed containers */
 const LABEL_MANAGED = 'botmaker.managed';
 const LABEL_BOT_ID = 'botmaker.bot-id';
+const LABEL_BOT_HOSTNAME = 'botmaker.bot-hostname';
 
 /**
  * Docker container lifecycle management service.
@@ -28,12 +29,13 @@ export class DockerService {
   /**
    * Creates a new container for a bot.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot (used for container name)
+   * @param botId - UUID of the bot (internal, passed as label)
    * @param config - Container configuration
    * @returns Container ID
    */
-  async createContainer(botId: string, config: ContainerConfig): Promise<string> {
-    const containerName = `botmaker-${botId}`;
+  async createContainer(hostname: string, botId: string, config: ContainerConfig): Promise<string> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = await this.docker.createContainer({
@@ -50,7 +52,8 @@ export class DockerService {
         },
         Labels: {
           [LABEL_MANAGED]: 'true',
-          [LABEL_BOT_ID]: botId
+          [LABEL_BOT_ID]: botId,
+          [LABEL_BOT_HOSTNAME]: hostname
         },
         HostConfig: {
           Binds: [
@@ -76,10 +79,10 @@ export class DockerService {
   /**
    * Starts a container for a bot.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot
    */
-  async startContainer(botId: string): Promise<void> {
-    const containerName = `botmaker-${botId}`;
+  async startContainer(hostname: string): Promise<void> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = this.docker.getContainer(containerName);
@@ -92,18 +95,18 @@ export class DockerService {
         return;
       }
 
-      throw wrapDockerError(err, botId);
+      throw wrapDockerError(err, hostname);
     }
   }
 
   /**
    * Stops a container for a bot.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot
    * @param timeout - Seconds to wait before killing (default: 10)
    */
-  async stopContainer(botId: string, timeout = 10): Promise<void> {
-    const containerName = `botmaker-${botId}`;
+  async stopContainer(hostname: string, timeout = 10): Promise<void> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = this.docker.getContainer(containerName);
@@ -116,23 +119,23 @@ export class DockerService {
         return;
       }
 
-      throw wrapDockerError(err, botId);
+      throw wrapDockerError(err, hostname);
     }
   }
 
   /**
    * Restarts a container for a bot.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot
    */
-  async restartContainer(botId: string): Promise<void> {
-    const containerName = `botmaker-${botId}`;
+  async restartContainer(hostname: string): Promise<void> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = this.docker.getContainer(containerName);
       await container.restart();
     } catch (err) {
-      throw wrapDockerError(err, botId);
+      throw wrapDockerError(err, hostname);
     }
   }
 
@@ -140,10 +143,10 @@ export class DockerService {
    * Removes a container for a bot.
    * Stops the container first if running.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot
    */
-  async removeContainer(botId: string): Promise<void> {
-    const containerName = `botmaker-${botId}`;
+  async removeContainer(hostname: string): Promise<void> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = this.docker.getContainer(containerName);
@@ -161,18 +164,18 @@ export class DockerService {
 
       await container.remove();
     } catch (err) {
-      throw wrapDockerError(err, botId);
+      throw wrapDockerError(err, hostname);
     }
   }
 
   /**
    * Gets the status of a container for a bot.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot
    * @returns Container status or null if not found
    */
-  async getContainerStatus(botId: string): Promise<ContainerStatus | null> {
-    const containerName = `botmaker-${botId}`;
+  async getContainerStatus(hostname: string): Promise<ContainerStatus | null> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = this.docker.getContainer(containerName);
@@ -194,7 +197,7 @@ export class DockerService {
         return null;
       }
 
-      throw wrapDockerError(err, botId);
+      throw wrapDockerError(err, hostname);
     }
   }
 
@@ -215,6 +218,7 @@ export class DockerService {
       id: c.Id,
       name: c.Names[0]?.replace(/^\//, '') ?? '',
       botId: c.Labels[LABEL_BOT_ID] ?? '',
+      hostname: c.Labels[LABEL_BOT_HOSTNAME] ?? '',
       state: c.State,
       status: c.Status
     }));
@@ -235,11 +239,11 @@ export class DockerService {
   /**
    * Gets resource statistics for a container.
    *
-   * @param botId - UUID of the bot
+   * @param hostname - Hostname of the bot
    * @returns Container stats or null if not found/not running
    */
-  async getContainerStats(botId: string): Promise<ContainerStats | null> {
-    const containerName = `botmaker-${botId}`;
+  async getContainerStats(hostname: string): Promise<ContainerStats | null> {
+    const containerName = `botmaker-${hostname}`;
 
     try {
       const container = this.docker.getContainer(containerName);
@@ -267,7 +271,7 @@ export class DockerService {
       }
 
       return {
-        botId,
+        hostname,
         name: containerName,
         cpuPercent: Math.round(cpuPercent * 100) / 100,
         memoryUsage,
@@ -285,7 +289,7 @@ export class DockerService {
         return null;
       }
 
-      throw wrapDockerError(err, botId);
+      throw wrapDockerError(err, hostname);
     }
   }
 
@@ -301,7 +305,7 @@ export class DockerService {
     const stats = await Promise.all(
       runningContainers.map(async (container) => {
         try {
-          return await this.getContainerStats(container.botId);
+          return await this.getContainerStats(container.hostname);
         } catch {
           return null;
         }

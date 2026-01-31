@@ -6,6 +6,7 @@ import { getDefaultModel } from '../../config/providers';
 export interface WizardState {
   selectedTemplateId: string | null;
   botName: string;
+  hostname: string;
   emoji: string;
   avatarFile: File | null;
   avatarPreviewUrl: string;
@@ -27,6 +28,7 @@ export interface WizardState {
 type WizardAction =
   | { type: 'SELECT_TEMPLATE'; templateId: string }
   | { type: 'SET_BOT_NAME'; name: string }
+  | { type: 'SET_HOSTNAME'; hostname: string }
   | { type: 'SET_EMOJI'; emoji: string }
   | { type: 'SET_AVATAR'; file: File | null; previewUrl: string }
   | { type: 'SET_SOUL_MARKDOWN'; markdown: string }
@@ -40,6 +42,7 @@ type WizardAction =
 const initialState: WizardState = {
   selectedTemplateId: null,
   botName: '',
+  hostname: '',
   emoji: '🤖',
   avatarFile: null,
   avatarPreviewUrl: '',
@@ -73,6 +76,9 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
 
     case 'SET_BOT_NAME':
       return { ...state, botName: action.name };
+
+    case 'SET_HOSTNAME':
+      return { ...state, hostname: action.hostname };
 
     case 'SET_EMOJI':
       return { ...state, emoji: action.emoji };
@@ -185,11 +191,17 @@ export function validatePage(page: number, state: WizardState): ValidationResult
       if (!state.botName.trim()) {
         return { valid: false, error: 'Bot name is required' };
       }
-      if (!/^[a-z0-9-]+$/.test(state.botName)) {
-        return { valid: false, error: 'Bot name must be lowercase letters, numbers, and hyphens only' };
+      if (!state.hostname.trim()) {
+        return { valid: false, error: 'Hostname is required' };
       }
-      if (state.botName.length < 2) {
-        return { valid: false, error: 'Bot name must be at least 2 characters' };
+      if (!/^[a-z0-9-]+$/.test(state.hostname)) {
+        return { valid: false, error: 'Hostname must be lowercase letters, numbers, and hyphens only' };
+      }
+      if (state.hostname.length < 2) {
+        return { valid: false, error: 'Hostname must be at least 2 characters' };
+      }
+      if (state.hostname.length > 64) {
+        return { valid: false, error: 'Hostname must be at most 64 characters' };
       }
       return { valid: true };
 
@@ -242,6 +254,7 @@ export function buildCreateBotInput(state: WizardState): CreateBotInputExtended 
 
   return {
     name: state.botName,
+    hostname: state.hostname,
     emoji: state.emoji,
     avatarUrl: state.avatarPreviewUrl || undefined,
     providers,

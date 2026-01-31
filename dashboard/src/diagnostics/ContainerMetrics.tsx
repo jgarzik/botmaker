@@ -40,9 +40,9 @@ export function ContainerMetrics({ stats }: ContainerMetricsProps) {
           <span>Net In/Out</span>
         </div>
         {stats.map((stat) => (
-          <div key={stat.botId} className="container-metrics-row">
+          <div key={stat.hostname} className="container-metrics-row">
             <div className="container-metrics-name">
-              <span className="container-metrics-id" title={stat.botId}>
+              <span className="container-metrics-id" title={stat.hostname}>
                 {extractBotName(stat.name)}
               </span>
             </div>

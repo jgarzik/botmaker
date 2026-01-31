@@ -9,7 +9,8 @@ export function createSchema(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS bots (
       id TEXT PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      hostname TEXT NOT NULL UNIQUE,
       ai_provider TEXT NOT NULL,
       model TEXT NOT NULL,
       channel_type TEXT NOT NULL,
@@ -22,5 +23,5 @@ export function createSchema(db: Database.Database): void {
 
   // Create indexes for common queries
   db.exec(`CREATE INDEX IF NOT EXISTS idx_bots_status ON bots(status)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_bots_name ON bots(name)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_bots_hostname ON bots(hostname)`);
 }

@@ -7,9 +7,9 @@ import './StatusSection.css';
 interface StatusSectionProps {
   status: BotStatus;
   bots: Bot[];
-  onStart: (id: string) => void;
-  onStop: (id: string) => void;
-  onDelete: (id: string) => void;
+  onStart: (hostname: string) => void;
+  onStop: (hostname: string) => void;
+  onDelete: (hostname: string) => void;
   loading: boolean;
   defaultExpanded?: boolean;
 }

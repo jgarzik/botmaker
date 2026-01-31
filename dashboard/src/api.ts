@@ -16,8 +16,8 @@ export async function fetchBots(): Promise<Bot[]> {
   return data.bots;
 }
 
-export async function fetchBot(id: string): Promise<Bot> {
-  const response = await fetch(`${API_BASE}/bots/${id}`);
+export async function fetchBot(hostname: string): Promise<Bot> {
+  const response = await fetch(`${API_BASE}/bots/${hostname}`);
   return handleResponse<Bot>(response);
 }
 
@@ -39,22 +39,22 @@ export async function createBotExtended(input: CreateBotInputExtended): Promise<
   return handleResponse<Bot>(response);
 }
 
-export async function deleteBot(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/bots/${id}`, {
+export async function deleteBot(hostname: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/bots/${hostname}`, {
     method: 'DELETE',
   });
   await handleResponse<{ success: boolean }>(response);
 }
 
-export async function startBot(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/bots/${id}/start`, {
+export async function startBot(hostname: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/bots/${hostname}/start`, {
     method: 'POST',
   });
   await handleResponse<{ success: boolean }>(response);
 }
 
-export async function stopBot(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/bots/${id}/stop`, {
+export async function stopBot(hostname: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/bots/${hostname}/stop`, {
     method: 'POST',
   });
   await handleResponse<{ success: boolean }>(response);

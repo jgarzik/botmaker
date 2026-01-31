@@ -125,6 +125,7 @@ describe('WizardContext', () => {
       const state = {
         selectedTemplateId: null,
         botName: '',
+        hostname: '',
         emoji: '🤖',
         avatarFile: null,
         avatarPreviewUrl: '',
@@ -143,6 +144,7 @@ describe('WizardContext', () => {
       const state = {
         selectedTemplateId: null,
         botName: '',
+        hostname: '',
         emoji: '🤖',
         avatarFile: null,
         avatarPreviewUrl: '',
@@ -158,10 +160,11 @@ describe('WizardContext', () => {
       expect(validatePage(1, state).error).toBe('Bot name is required');
     });
 
-    it('page 1 validates slug format', () => {
+    it('page 1 validates hostname format', () => {
       const state = {
         selectedTemplateId: null,
-        botName: 'Invalid Name!',
+        botName: 'My Bot',
+        hostname: 'Invalid-Name!',
         emoji: '🤖',
         avatarFile: null,
         avatarPreviewUrl: '',
@@ -181,6 +184,7 @@ describe('WizardContext', () => {
       const state = {
         selectedTemplateId: null,
         botName: 'test-bot',
+        hostname: 'test-bot',
         emoji: '🤖',
         avatarFile: null,
         avatarPreviewUrl: '',
@@ -200,6 +204,7 @@ describe('WizardContext', () => {
       const state = {
         selectedTemplateId: null,
         botName: 'test-bot',
+        hostname: 'test-bot',
         emoji: '🤖',
         avatarFile: null,
         avatarPreviewUrl: '',
@@ -221,7 +226,8 @@ describe('WizardContext', () => {
     it('builds input from state', () => {
       const state = {
         selectedTemplateId: 'helpful-assistant',
-        botName: 'my-bot',
+        botName: 'My Bot',
+        hostname: 'my-bot',
         emoji: '🤖',
         avatarFile: null,
         avatarPreviewUrl: '',
@@ -235,7 +241,8 @@ describe('WizardContext', () => {
 
       const input = buildCreateBotInput(state);
 
-      expect(input.name).toBe('my-bot');
+      expect(input.name).toBe('My Bot');
+      expect(input.hostname).toBe('my-bot');
       expect(input.emoji).toBe('🤖');
       expect(input.providers).toHaveLength(1);
       expect(input.providers[0].providerId).toBe('openai');

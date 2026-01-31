@@ -6,9 +6,9 @@ import './DashboardTab.css';
 
 interface DashboardTabProps {
   bots: Bot[];
-  onStart: (id: string) => void;
-  onStop: (id: string) => void;
-  onDelete: (id: string) => void;
+  onStart: (hostname: string) => void;
+  onStop: (hostname: string) => void;
+  onDelete: (hostname: string) => void;
   onCreateClick: () => void;
   loading: boolean;
   actionLoading: boolean;

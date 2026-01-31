@@ -20,6 +20,7 @@ export interface ChannelConfig {
 
 export interface BotWorkspaceConfig {
   botId: string;
+  botHostname: string;
   botName: string;
   aiProvider: string;
   apiKey: string;
@@ -157,7 +158,7 @@ ${persona.description}
  * @param config - Bot workspace configuration
  */
 export function createBotWorkspace(dataDir: string, config: BotWorkspaceConfig): void {
-  const botDir = join(dataDir, 'bots', config.botId);
+  const botDir = join(dataDir, 'bots', config.botHostname);
   const workspaceDir = join(botDir, 'workspace');
 
   // Create directories with permissions for bot container (runs as uid 1000)
@@ -211,11 +212,11 @@ export function createBotWorkspace(dataDir: string, config: BotWorkspaceConfig):
  * Get the path to a bot's workspace directory.
  *
  * @param dataDir - Root data directory
- * @param botId - Bot UUID
+ * @param hostname - Bot hostname
  * @returns Path to bot workspace
  */
-export function getBotWorkspacePath(dataDir: string, botId: string): string {
-  return join(dataDir, 'bots', botId);
+export function getBotWorkspacePath(dataDir: string, hostname: string): string {
+  return join(dataDir, 'bots', hostname);
 }
 
 /**
@@ -223,9 +224,9 @@ export function getBotWorkspacePath(dataDir: string, botId: string): string {
  * Safe to call even if the directory doesn't exist.
  *
  * @param dataDir - Root data directory
- * @param botId - Bot UUID
+ * @param hostname - Bot hostname
  */
-export function deleteBotWorkspace(dataDir: string, botId: string): void {
-  const botDir = join(dataDir, 'bots', botId);
+export function deleteBotWorkspace(dataDir: string, hostname: string): void {
+  const botDir = join(dataDir, 'bots', hostname);
   rmSync(botDir, { recursive: true, force: true });
 }

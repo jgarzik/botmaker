@@ -13,8 +13,8 @@ import { deleteBotWorkspace } from '../bots/templates.js';
 import { deleteBotSecrets, getSecretsRoot } from '../secrets/manager.js';
 import type { Bot } from '../types/bot.js';
 
-/** UUID regex for identifying valid bot directories */
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Hostname regex for identifying valid bot directories */
+const HOSTNAME_REGEX = /^[a-z0-9-]{1,64}$/;
 
 export interface ReconciliationReport {
   botsChecked: number;
@@ -60,35 +60,35 @@ export class ReconciliationService {
 
     // Get all bots from DB
     const bots = listBots();
-    const botIds = new Set(bots.map(b => b.id));
+    const botHostnames = new Set(bots.map(b => b.hostname));
     report.botsChecked = bots.length;
 
     // Get all managed containers from Docker
     const containers = await this.docker.listManagedContainers();
-    const containerBotIds = new Set(containers.map(c => c.botId));
+    const containerHostnames = new Set(containers.map(c => c.hostname));
 
     // Sync DB status with container state
     for (const bot of bots) {
-      const updated = await this.syncBotStatus(bot, containerBotIds.has(bot.id));
+      const updated = await this.syncBotStatus(bot, containerHostnames.has(bot.hostname));
       if (updated) report.statusUpdated++;
     }
 
     // Detect orphaned containers (in Docker but not in DB)
     for (const container of containers) {
-      if (container.botId && !botIds.has(container.botId)) {
-        report.orphanedContainers.push(container.botId);
-        this.logger.warn({ botId: container.botId }, 'Orphaned container detected');
+      if (container.hostname && !botHostnames.has(container.hostname)) {
+        report.orphanedContainers.push(container.hostname);
+        this.logger.warn({ hostname: container.hostname }, 'Orphaned container detected');
       }
     }
 
     // Detect orphaned workspace directories
     const botsDir = join(this.dataDir, 'bots');
     if (existsSync(botsDir)) {
-      const workspaceDirs = this.listUuidDirectories(botsDir);
+      const workspaceDirs = this.listHostnameDirectories(botsDir);
       for (const dir of workspaceDirs) {
-        if (!botIds.has(dir)) {
+        if (!botHostnames.has(dir)) {
           report.orphanedWorkspaces.push(dir);
-          this.logger.warn({ botId: dir }, 'Orphaned workspace directory detected');
+          this.logger.warn({ hostname: dir }, 'Orphaned workspace directory detected');
         }
       }
     }
@@ -96,11 +96,11 @@ export class ReconciliationService {
     // Detect orphaned secrets directories
     const secretsRoot = getSecretsRoot();
     if (existsSync(secretsRoot)) {
-      const secretDirs = this.listUuidDirectories(secretsRoot);
+      const secretDirs = this.listHostnameDirectories(secretsRoot);
       for (const dir of secretDirs) {
-        if (!botIds.has(dir)) {
+        if (!botHostnames.has(dir)) {
           report.orphanedSecrets.push(dir);
-          this.logger.warn({ botId: dir }, 'Orphaned secrets directory detected');
+          this.logger.warn({ hostname: dir }, 'Orphaned secrets directory detected');
         }
       }
     }
@@ -121,35 +121,35 @@ export class ReconciliationService {
     };
 
     // Remove orphaned containers
-    for (const botId of reconciliation.orphanedContainers) {
+    for (const hostname of reconciliation.orphanedContainers) {
       try {
-        await this.docker.removeContainer(botId);
+        await this.docker.removeContainer(hostname);
         report.containersRemoved++;
-        this.logger.info({ botId }, 'Removed orphaned container');
+        this.logger.info({ hostname }, 'Removed orphaned container');
       } catch (err) {
-        this.logger.warn({ botId, error: err }, 'Failed to remove orphaned container');
+        this.logger.warn({ hostname, error: err }, 'Failed to remove orphaned container');
       }
     }
 
     // Remove orphaned workspaces
-    for (const botId of reconciliation.orphanedWorkspaces) {
+    for (const hostname of reconciliation.orphanedWorkspaces) {
       try {
-        deleteBotWorkspace(this.dataDir, botId);
+        deleteBotWorkspace(this.dataDir, hostname);
         report.workspacesRemoved++;
-        this.logger.info({ botId }, 'Removed orphaned workspace');
+        this.logger.info({ hostname }, 'Removed orphaned workspace');
       } catch (err) {
-        this.logger.warn({ botId, error: err }, 'Failed to remove orphaned workspace');
+        this.logger.warn({ hostname, error: err }, 'Failed to remove orphaned workspace');
       }
     }
 
     // Remove orphaned secrets
-    for (const botId of reconciliation.orphanedSecrets) {
+    for (const hostname of reconciliation.orphanedSecrets) {
       try {
-        deleteBotSecrets(botId);
+        deleteBotSecrets(hostname);
         report.secretsRemoved++;
-        this.logger.info({ botId }, 'Removed orphaned secrets');
+        this.logger.info({ hostname }, 'Removed orphaned secrets');
       } catch (err) {
-        this.logger.warn({ botId, error: err }, 'Failed to remove orphaned secrets');
+        this.logger.warn({ hostname, error: err }, 'Failed to remove orphaned secrets');
       }
     }
 
@@ -165,7 +165,7 @@ export class ReconciliationService {
       // No container exists
       if (bot.status === 'running') {
         updateBot(bot.id, { status: 'stopped', container_id: null });
-        this.logger.info({ botId: bot.id }, 'Bot marked stopped (no container)');
+        this.logger.info({ hostname: bot.hostname }, 'Bot marked stopped (no container)');
         return true;
       }
       if (bot.container_id) {
@@ -176,7 +176,7 @@ export class ReconciliationService {
     }
 
     // Container exists - check its actual state
-    const containerStatus = await this.docker.getContainerStatus(bot.id);
+    const containerStatus = await this.docker.getContainerStatus(bot.hostname);
     if (!containerStatus) {
       // Container disappeared between list and inspect
       if (bot.status === 'running') {
@@ -189,7 +189,7 @@ export class ReconciliationService {
     // Sync status based on container state
     if (containerStatus.running && bot.status !== 'running') {
       updateBot(bot.id, { status: 'running' });
-      this.logger.info({ botId: bot.id }, 'Bot marked running');
+      this.logger.info({ hostname: bot.hostname }, 'Bot marked running');
       return true;
     }
 
@@ -197,7 +197,7 @@ export class ReconciliationService {
       // Container stopped or exited
       const newStatus = containerStatus.exitCode !== 0 ? 'error' : 'stopped';
       updateBot(bot.id, { status: newStatus });
-      this.logger.info({ botId: bot.id, status: newStatus }, 'Bot status synced from container');
+      this.logger.info({ hostname: bot.hostname, status: newStatus }, 'Bot status synced from container');
       return true;
     }
 
@@ -205,13 +205,13 @@ export class ReconciliationService {
   }
 
   /**
-   * List UUID-named directories in a path.
+   * List hostname-named directories in a path.
    */
-  private listUuidDirectories(path: string): string[] {
+  private listHostnameDirectories(path: string): string[] {
     try {
       const entries = readdirSync(path, { withFileTypes: true });
       return entries
-        .filter(e => e.isDirectory() && UUID_REGEX.test(e.name))
+        .filter(e => e.isDirectory() && HOSTNAME_REGEX.test(e.name))
         .map(e => e.name);
     } catch {
       return [];

@@ -12,6 +12,7 @@ export interface ContainerStatus {
 export interface Bot {
   id: string;
   name: string;
+  hostname: string;
   ai_provider: string;
   model: string;
   channel_type: string;
@@ -39,7 +40,7 @@ export interface CreateBotInput {
 }
 
 export interface ContainerStats {
-  botId: string;
+  hostname: string;
   name: string;
   cpuPercent: number;
   memoryUsage: number;
@@ -88,6 +89,7 @@ export interface ChannelConfigInput {
 
 export interface CreateBotInputExtended {
   name: string;
+  hostname: string;
   emoji: string;
   avatarUrl?: string;
   providers: ProviderConfigInput[];

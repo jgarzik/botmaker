@@ -10,9 +10,9 @@ interface UseBotsReturn {
   clearError: () => void;
   refresh: () => Promise<void>;
   handleCreate: (input: CreateBotInput | CreateBotInputExtended) => Promise<void>;
-  handleStart: (id: string) => Promise<void>;
-  handleStop: (id: string) => Promise<void>;
-  handleDelete: (id: string) => Promise<void>;
+  handleStart: (hostname: string) => Promise<void>;
+  handleStop: (hostname: string) => Promise<void>;
+  handleDelete: (hostname: string) => Promise<void>;
 }
 
 export function useBots(): UseBotsReturn {
@@ -50,10 +50,10 @@ export function useBots(): UseBotsReturn {
     await loadBots();
   };
 
-  const handleStart = async (id: string) => {
+  const handleStart = async (hostname: string) => {
     setActionLoading(true);
     try {
-      await startBot(id);
+      await startBot(hostname);
       await loadBots();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start bot');
@@ -62,10 +62,10 @@ export function useBots(): UseBotsReturn {
     }
   };
 
-  const handleStop = async (id: string) => {
+  const handleStop = async (hostname: string) => {
     setActionLoading(true);
     try {
-      await stopBot(id);
+      await stopBot(hostname);
       await loadBots();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to stop bot');
@@ -74,10 +74,10 @@ export function useBots(): UseBotsReturn {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (hostname: string) => {
     setActionLoading(true);
     try {
-      await deleteBot(id);
+      await deleteBot(hostname);
       await loadBots();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete bot');
