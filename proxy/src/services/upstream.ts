@@ -75,6 +75,10 @@ export async function forwardToUpstream(
 
       proxyRes.on('data', (chunk) => {
         reply.raw.write(chunk);
+        // Force flush for SSE - ensures events are sent immediately
+        if (typeof (reply.raw as any).flush === 'function') {
+          (reply.raw as any).flush();
+        }
       });
 
       proxyRes.on('end', () => {
