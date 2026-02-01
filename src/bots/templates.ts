@@ -51,7 +51,7 @@ function generateOpenclawConfig(config: BotWorkspaceConfig): object {
           [config.aiProvider]: {
             baseUrl: config.proxy.baseUrl,
             apiKey: config.proxy.token,
-            models: [config.model],
+            models: [{ id: config.model, name: config.model }],
           },
         },
       }
