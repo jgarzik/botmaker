@@ -1,4 +1,13 @@
 services:
+  botenv:
+    profiles: ["build"]   # Won't start with `docker compose up`
+    build:
+      context: .
+      dockerfile: Dockerfile.botenv
+      args:
+        BASE_IMAGE: ${OPENCLAW_BASE_IMAGE:-openclaw:latest}
+    image: ${BOTENV_IMAGE:-botmaker-env:latest}
+
   botmaker:
     build: .
     container_name: botmaker
@@ -19,7 +28,7 @@ services:
       # Volume names for runtime path discovery
       - DATA_VOLUME_NAME=botmaker_botmaker-data
       - SECRETS_VOLUME_NAME=botmaker_botmaker-secrets
-      - OPENCLAW_IMAGE=openclaw:latest
+      - OPENCLAW_IMAGE=${BOTENV_IMAGE:-botmaker-env:latest}
       # Proxy configuration (optional - comment out to disable)
       - PROXY_ADMIN_URL=http://keyring-proxy:9100
       - PROXY_ADMIN_TOKEN_FILE=/secrets/proxy_admin_token

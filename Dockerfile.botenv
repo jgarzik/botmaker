@@ -1,0 +1,33 @@
+# Extended base image for bot containers with build tools and utilities
+# Build: docker compose build botenv
+# Usage: Automatically used by botmaker when spawning bot containers
+
+ARG BASE_IMAGE=openclaw:latest
+FROM ${BASE_IMAGE}
+
+# Switch to root for package installation
+USER root
+
+# Install build tools, languages, and utilities in single layer for cache efficiency
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Build essentials
+    build-essential \
+    git ca-certificates curl \
+    pkg-config cmake ninja-build \
+    # Debugging
+    gdb strace \
+    # Python
+    python3 python3-venv python3-pip python3-dev \
+    # Dev libraries
+    libssl-dev libffi-dev \
+    zlib1g-dev libbz2-dev liblzma-dev libreadline-dev libsqlite3-dev \
+    # CLI utilities
+    jq ripgrep fd-find less \
+    unzip zip xz-utils \
+    # Process/network tools
+    procps lsof \
+    iproute2 netcat-openbsd dnsutils \
+ && rm -rf /var/lib/apt/lists/*
+
+# Switch back to non-root user
+USER node
