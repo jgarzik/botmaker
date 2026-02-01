@@ -102,12 +102,9 @@ export function SecretsTab() {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 10H7V7h2v4zm0-6H7V3h2v2z" />
           </svg>
-          <span>
-            Key added successfully! This is the only time you'll see the full secret. It will be masked after you dismiss
-            this message.
-          </span>
+          <span>Key added successfully!</span>
           <button className="btn btn--sm btn--primary" onClick={dismissNewKeySecret}>
-            I've Saved It
+            Dismiss
           </button>
         </div>
       )}
