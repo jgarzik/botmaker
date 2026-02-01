@@ -1,20 +1,26 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { AddKeyPanel } from './AddKeyPanel';
+import { AddKeyForm } from './AddKeyForm';
 
-describe('AddKeyPanel', () => {
+describe('AddKeyForm', () => {
+  const defaultProps = {
+    onSubmit: () => Promise.resolve(),
+    onCancel: () => {},
+    loading: false,
+  };
+
   it('should render form fields', () => {
-    render(<AddKeyPanel onSubmit={() => Promise.resolve()} loading={false} />);
+    render(<AddKeyForm {...defaultProps} />);
 
     expect(screen.getByLabelText('Provider')).toBeInTheDocument();
     expect(screen.getByLabelText('API Key *')).toBeInTheDocument();
     expect(screen.getByLabelText('Label')).toBeInTheDocument();
     expect(screen.getByLabelText('Tag')).toBeInTheDocument();
-    expect(screen.getByText('Add Key')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add Key' })).toBeInTheDocument();
   });
 
   it('should have vendor options', () => {
-    render(<AddKeyPanel onSubmit={() => Promise.resolve()} loading={false} />);
+    render(<AddKeyForm {...defaultProps} />);
 
     const select = screen.getByLabelText('Provider');
     expect(select).toContainHTML('OpenAI');
@@ -24,7 +30,7 @@ describe('AddKeyPanel', () => {
   });
 
   it('should default vendor to openai', () => {
-    render(<AddKeyPanel onSubmit={() => Promise.resolve()} loading={false} />);
+    render(<AddKeyForm {...defaultProps} />);
 
     const select = screen.getByLabelText('Provider') as HTMLSelectElement;
     expect(select.value).toBe('openai');
@@ -32,14 +38,14 @@ describe('AddKeyPanel', () => {
 
   it('should submit with correct values', async () => {
     const handleSubmit = vi.fn().mockResolvedValue(undefined);
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'anthropic' } });
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: 'sk-ant-123' } });
     fireEvent.change(screen.getByLabelText('Label'), { target: { value: 'Test Key' } });
     fireEvent.change(screen.getByLabelText('Tag'), { target: { value: 'prod' } });
 
-    fireEvent.click(screen.getByText('Add Key'));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Key' }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith({
@@ -53,56 +59,56 @@ describe('AddKeyPanel', () => {
 
   it('should show error when API key is empty', async () => {
     const handleSubmit = vi.fn();
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     // Button is disabled when secret is empty, so form shouldn't submit
-    expect(screen.getByText('Add Key')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Key' })).toBeDisabled();
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 
   it('should show error when API key is whitespace', async () => {
     const handleSubmit = vi.fn();
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: '   ' } });
     // Button is disabled when secret is only whitespace (after trim check)
-    expect(screen.getByText('Add Key')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Key' })).toBeDisabled();
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 
   it('should disable form when loading', () => {
-    render(<AddKeyPanel onSubmit={() => Promise.resolve()} loading={true} />);
+    render(<AddKeyForm {...defaultProps} loading={true} />);
 
     expect(screen.getByLabelText('Provider')).toBeDisabled();
     expect(screen.getByLabelText('API Key *')).toBeDisabled();
     expect(screen.getByLabelText('Label')).toBeDisabled();
     expect(screen.getByLabelText('Tag')).toBeDisabled();
-    expect(screen.getByText('Adding...')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Adding...' })).toBeDisabled();
   });
 
   it('should disable submit button when secret is empty', () => {
-    render(<AddKeyPanel onSubmit={() => Promise.resolve()} loading={false} />);
+    render(<AddKeyForm {...defaultProps} />);
 
-    expect(screen.getByText('Add Key')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Key' })).toBeDisabled();
   });
 
   it('should enable submit button when secret is filled', () => {
-    render(<AddKeyPanel onSubmit={() => Promise.resolve()} loading={false} />);
+    render(<AddKeyForm {...defaultProps} />);
 
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: 'sk-123' } });
 
-    expect(screen.getByText('Add Key')).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Key' })).not.toBeDisabled();
   });
 
   it('should clear form after successful submit', async () => {
     const handleSubmit = vi.fn().mockResolvedValue(undefined);
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: 'sk-123' } });
     fireEvent.change(screen.getByLabelText('Label'), { target: { value: 'My Key' } });
     fireEvent.change(screen.getByLabelText('Tag'), { target: { value: 'prod' } });
 
-    fireEvent.click(screen.getByText('Add Key'));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Key' }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalled();
@@ -119,10 +125,10 @@ describe('AddKeyPanel', () => {
 
   it('should show error from submit failure', async () => {
     const handleSubmit = vi.fn().mockRejectedValue(new Error('Failed to add key'));
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: 'sk-123' } });
-    fireEvent.click(screen.getByText('Add Key'));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Key' }));
 
     await waitFor(() => {
       expect(screen.getByText('Failed to add key')).toBeInTheDocument();
@@ -131,13 +137,13 @@ describe('AddKeyPanel', () => {
 
   it('should trim whitespace from values', async () => {
     const handleSubmit = vi.fn().mockResolvedValue(undefined);
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: '  sk-123  ' } });
     fireEvent.change(screen.getByLabelText('Label'), { target: { value: '  My Key  ' } });
     fireEvent.change(screen.getByLabelText('Tag'), { target: { value: '  prod  ' } });
 
-    fireEvent.click(screen.getByText('Add Key'));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Key' }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith({
@@ -151,10 +157,10 @@ describe('AddKeyPanel', () => {
 
   it('should not include empty optional fields', async () => {
     const handleSubmit = vi.fn().mockResolvedValue(undefined);
-    render(<AddKeyPanel onSubmit={handleSubmit} loading={false} />);
+    render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
     fireEvent.change(screen.getByLabelText('API Key *'), { target: { value: 'sk-123' } });
-    fireEvent.click(screen.getByText('Add Key'));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Key' }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith({
@@ -164,5 +170,14 @@ describe('AddKeyPanel', () => {
         tag: undefined,
       });
     });
+  });
+
+  it('should call onCancel when Cancel button is clicked', () => {
+    const handleCancel = vi.fn();
+    render(<AddKeyForm {...defaultProps} onCancel={handleCancel} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(handleCancel).toHaveBeenCalled();
   });
 });

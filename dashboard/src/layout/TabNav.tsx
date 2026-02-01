@@ -22,6 +22,17 @@ const tabs: Tab[] = [
     ),
   },
   {
+    id: 'secrets',
+    label: 'Secrets',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="7" width="10" height="8" rx="1" />
+        <path d="M5 7V5a3 3 0 116 0v2" />
+        <circle cx="8" cy="11" r="1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
     id: 'diagnostics',
     label: 'Diagnostics',
     icon: (
@@ -30,17 +41,6 @@ const tabs: Tab[] = [
         <path d="M1 8h14" />
         <circle cx="8" cy="8" r="6" />
         <circle cx="8" cy="8" r="2" />
-      </svg>
-    ),
-  },
-  {
-    id: 'secrets',
-    label: 'Secrets',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="7" width="10" height="8" rx="1" />
-        <path d="M5 7V5a3 3 0 116 0v2" />
-        <circle cx="8" cy="11" r="1" fill="currentColor" />
       </svg>
     ),
   },

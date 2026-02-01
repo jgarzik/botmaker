@@ -7,7 +7,7 @@ dashboard/dist/
 
 # Data
 data/
-secrets/
+/secrets/
 
 # Environment
 .env
