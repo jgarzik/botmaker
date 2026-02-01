@@ -58,14 +58,17 @@ BotMaker isolates API keys from bot containers entirely. Bots never see your rea
 
 - Node.js 20+
 - Docker
-- OpenClaw Docker image (`openclaw:latest` or custom)
+- OpenClaw Docker image (`openclaw:latest` or custom base image)
 
 ## Quick Start
 
 ### Docker Compose (Recommended)
 
 ```bash
-# Build and run
+# Build the bot environment image (includes build tools, python, etc.)
+docker compose build botenv
+
+# Run services
 docker compose up -d
 
 # View logs
@@ -108,8 +111,8 @@ npm start
 | `HOST` | 0.0.0.0 | Bind address |
 | `DATA_DIR` | ./data | Database and bot workspaces |
 | `SECRETS_DIR` | ./secrets | Per-bot secret storage |
-| `OPENCLAW_IMAGE` | openclaw:latest | Docker image for bots |
-| `OPENCLAW_GIT_TAG` | main | Git tag for building image |
+| `BOTENV_IMAGE` | botmaker-env:latest | Bot container image (built from botenv) |
+| `OPENCLAW_BASE_IMAGE` | openclaw:latest | Base image for botenv |
 | `BOT_PORT_START` | 19000 | Starting port for bot containers |
 
 ## API Reference
@@ -119,11 +122,11 @@ npm start
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/bots` | List all bots with container status |
-| GET | `/api/bots/:id` | Get bot details |
+| GET | `/api/bots/:hostname` | Get bot details |
 | POST | `/api/bots` | Create bot |
-| DELETE | `/api/bots/:id` | Delete bot and cleanup resources |
-| POST | `/api/bots/:id/start` | Start bot container |
-| POST | `/api/bots/:id/stop` | Stop bot container |
+| DELETE | `/api/bots/:hostname` | Delete bot and cleanup resources |
+| POST | `/api/bots/:hostname/start` | Start bot container |
+| POST | `/api/bots/:hostname/stop` | Stop bot container |
 
 ### Monitoring & Admin
 
