@@ -14,12 +14,38 @@ vi.mock('../api', () => ({
 
 describe('useBots', () => {
   const mockBots = [
-    { id: '1', name: 'Bot 1', hostname: 'bot-1', status: 'running' as const },
-    { id: '2', name: 'Bot 2', hostname: 'bot-2', status: 'stopped' as const },
+    {
+      id: '1',
+      name: 'Bot 1',
+      hostname: 'bot-1',
+      ai_provider: 'openai',
+      model: 'gpt-4',
+      channel_type: 'telegram',
+      container_id: 'container-1',
+      port: 3001,
+      gateway_token: 'token-1',
+      status: 'running' as const,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    },
+    {
+      id: '2',
+      name: 'Bot 2',
+      hostname: 'bot-2',
+      ai_provider: 'anthropic',
+      model: 'claude-3',
+      channel_type: 'discord',
+      container_id: null,
+      port: null,
+      gateway_token: null,
+      status: 'stopped' as const,
+      created_at: '2024-01-02T00:00:00Z',
+      updated_at: '2024-01-02T00:00:00Z',
+    },
   ];
 
   beforeEach(() => {
-    vi.mocked(api.fetchBots).mockResolvedValue(mockBots as any);
+    vi.mocked(api.fetchBots).mockResolvedValue(mockBots);
   });
 
   afterEach(() => {
@@ -82,7 +108,20 @@ describe('useBots', () => {
   });
 
   it('should handle create', async () => {
-    vi.mocked(api.createBot).mockResolvedValueOnce({ id: '3' } as any);
+    vi.mocked(api.createBot).mockResolvedValueOnce({
+      id: '3',
+      name: 'New Bot',
+      hostname: 'new-bot',
+      ai_provider: 'openai',
+      model: 'gpt-4',
+      channel_type: 'telegram',
+      container_id: null,
+      port: null,
+      gateway_token: null,
+      status: 'created' as const,
+      created_at: '2024-01-03T00:00:00Z',
+      updated_at: '2024-01-03T00:00:00Z',
+    });
 
     const { result } = renderHook(() => useBots());
 
