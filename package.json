@@ -1,6 +1,6 @@
 {
   "name": "botmaker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Web UI for creating and managing OpenClaw bots",
   "author": "Jeff Garzik",
   "license": "MIT",

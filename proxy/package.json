@@ -1,6 +1,6 @@
 {
   "name": "keyring-proxy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HTTP forward proxy for BotMaker - validates bot tokens, injects API keys",
   "type": "module",
   "main": "dist/index.js",
