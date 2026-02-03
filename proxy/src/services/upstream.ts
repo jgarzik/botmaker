@@ -1,7 +1,11 @@
 import https from 'https';
-import type { IncomingMessage } from 'http';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { IncomingMessage, ServerResponse } from 'http';
+import type { FastifyReply } from 'fastify';
 import type { VendorConfig } from '../types.js';
+
+interface FlushableResponse extends ServerResponse {
+  flush?: () => void;
+}
 
 const REQUEST_TIMEOUT_MS = 120000;
 
@@ -28,13 +32,13 @@ export async function forwardToUpstream(
     const upstreamHeaders: Record<string, string> = { ...headers };
 
     // Remove hop-by-hop headers
-    delete upstreamHeaders['host'];
-    delete upstreamHeaders['connection'];
-    delete upstreamHeaders['authorization'];
+    delete upstreamHeaders.host;
+    delete upstreamHeaders.connection;
+    delete upstreamHeaders.authorization;
     delete upstreamHeaders['content-length'];
 
     // Set correct host
-    upstreamHeaders['host'] = vendorConfig.host;
+    upstreamHeaders.host = vendorConfig.host;
 
     // Set auth header with real API key
     upstreamHeaders[vendorConfig.authHeader.toLowerCase()] = vendorConfig.authFormat(apiKey);
@@ -69,7 +73,7 @@ export async function forwardToUpstream(
       const contentType = proxyRes.headers['content-type'];
       if (contentType?.includes('text/event-stream')) {
         forwardHeaders['cache-control'] = 'no-cache';
-        forwardHeaders['connection'] = 'keep-alive';
+        forwardHeaders.connection = 'keep-alive';
       }
 
       // Use raw response to bypass Fastify buffering
@@ -79,8 +83,9 @@ export async function forwardToUpstream(
       proxyRes.on('data', (chunk) => {
         reply.raw.write(chunk);
         // Force flush for SSE - ensures events are sent immediately
-        if (typeof (reply.raw as any).flush === 'function') {
-          (reply.raw as any).flush();
+        const rawResponse = reply.raw as FlushableResponse;
+        if (typeof rawResponse.flush === 'function') {
+          rawResponse.flush();
         }
       });
 

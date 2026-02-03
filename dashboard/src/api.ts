@@ -10,9 +10,7 @@ export function setAdminToken(token: string): void {
 }
 
 export function getAdminToken(): string | null {
-  if (!adminToken) {
-    adminToken = localStorage.getItem('admin_token');
-  }
+  adminToken ??= localStorage.getItem('admin_token');
   return adminToken;
 }
 
@@ -37,10 +35,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
     throw new Error('Authentication failed. Please re-enter your admin token.');
   }
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP error ${response.status}`);
+    const data: { error?: string } = await response.json().catch(() => ({})) as { error?: string };
+    throw new Error(data.error ?? `HTTP error ${response.status}`);
   }
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export async function fetchBots(): Promise<Bot[]> {
@@ -61,7 +59,7 @@ export async function fetchBot(hostname: string): Promise<Bot> {
 export async function createBot(input: CreateBotInput): Promise<Bot> {
   const response = await fetch(`${API_BASE}/bots`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json', ...Object.fromEntries(Object.entries(getAuthHeaders())) },
     body: JSON.stringify(input),
   });
   return handleResponse<Bot>(response);
@@ -130,7 +128,7 @@ export async function fetchProxyKeys(): Promise<ProxyKey[]> {
 export async function addProxyKey(input: AddKeyInput): Promise<{ id: string }> {
   const response = await fetch(`${API_BASE}/proxy/keys`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json', ...Object.fromEntries(Object.entries(getAuthHeaders())) },
     body: JSON.stringify(input),
   });
   return handleResponse<{ id: string }>(response);

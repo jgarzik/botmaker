@@ -31,8 +31,7 @@
     "dev": "tsx watch src/index.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "vitest",
-    "test:run": "vitest run",
+    "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {

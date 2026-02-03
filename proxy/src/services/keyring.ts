@@ -5,7 +5,7 @@ import { decrypt } from '../crypto/encryption.js';
 export class KeyringService {
   private db: ProxyDatabase;
   private masterKey: Buffer;
-  private roundRobinIndex: Map<string, number> = new Map();
+  private roundRobinIndex = new Map<string, number>();
 
   constructor(db: ProxyDatabase, masterKey: Buffer) {
     this.db = db;

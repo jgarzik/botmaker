@@ -29,11 +29,11 @@ export function useContainerStats(): UseContainerStatsReturn {
   }, []);
 
   useEffect(() => {
-    loadStats();
+    void loadStats();
 
     // Poll for updates every 30 seconds
-    const interval = setInterval(loadStats, POLLING_INTERVAL);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => { void loadStats(); }, POLLING_INTERVAL);
+    return () => { clearInterval(interval); };
   }, [loadStats]);
 
   return {

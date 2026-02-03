@@ -31,8 +31,8 @@ export function DeleteKeyModal({ isOpen, onClose, onConfirm, keyToDelete }: Dele
 
   if (!keyToDelete) return null;
 
-  const vendorName = VENDOR_NAMES[keyToDelete.vendor] || keyToDelete.vendor;
-  const keyLabel = keyToDelete.label || 'Unnamed Key';
+  const vendorName = VENDOR_NAMES[keyToDelete.vendor] ?? keyToDelete.vendor;
+  const keyLabel = keyToDelete.label ?? 'Unnamed Key';
 
   return (
     <Modal
@@ -51,7 +51,7 @@ export function DeleteKeyModal({ isOpen, onClose, onConfirm, keyToDelete }: Dele
           </button>
           <button
             className="btn btn--md btn--danger"
-            onClick={handleConfirm}
+            onClick={() => { void handleConfirm(); }}
             disabled={deleting}
           >
             {deleting ? 'Deleting...' : 'Delete'}

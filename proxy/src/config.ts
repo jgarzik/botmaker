@@ -32,9 +32,9 @@ export function loadConfig(): Config {
   }
 
   return {
-    adminPort: parseInt(process.env.ADMIN_PORT || '9100', 10),
-    dataPort: parseInt(process.env.DATA_PORT || '9101', 10),
-    dbPath: process.env.DB_PATH || './proxy.db',
+    adminPort: parseInt(process.env.ADMIN_PORT ?? '9100', 10),
+    dataPort: parseInt(process.env.DATA_PORT ?? '9101', 10),
+    dbPath: process.env.DB_PATH ?? './proxy.db',
     masterKey,
     adminToken: readSecret('ADMIN_TOKEN', process.env.ADMIN_TOKEN_FILE),
   };

@@ -18,7 +18,7 @@ describe('TemplateCard', () => {
       <TemplateCard
         template={mockTemplate}
         selected={false}
-        onSelect={() => {}}
+        onSelect={() => { /* noop */ }}
       />
     );
 
@@ -32,7 +32,7 @@ describe('TemplateCard', () => {
       <TemplateCard
         template={mockTemplate}
         selected={false}
-        onSelect={() => {}}
+        onSelect={() => { /* noop */ }}
       />
     );
 
@@ -44,7 +44,7 @@ describe('TemplateCard', () => {
       <TemplateCard
         template={mockTemplate}
         selected={true}
-        onSelect={() => {}}
+        onSelect={() => { /* noop */ }}
       />
     );
 
@@ -80,7 +80,7 @@ describe('TemplateCard', () => {
       <TemplateCard
         template={scratchTemplate}
         selected={false}
-        onSelect={() => {}}
+        onSelect={() => { /* noop */ }}
       />
     );
 

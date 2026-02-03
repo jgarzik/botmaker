@@ -16,8 +16,8 @@ export function MarkdownEditor({ value, onChange, placeholder }: MarkdownEditorP
       <textarea
         className="markdown-editor-textarea"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || '# Soul\n\nDescribe your bot\'s personality, guidelines, and behavior...'}
+        onChange={(e) => { onChange(e.target.value); }}
+        placeholder={placeholder ?? '# Soul\n\nDescribe your bot\'s personality, guidelines, and behavior...'}
         spellCheck={false}
       />
     </div>

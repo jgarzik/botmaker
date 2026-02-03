@@ -39,7 +39,7 @@ export function StatusSection({
     <section className="status-section">
       <button
         className="status-section-header"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { setExpanded(!expanded); }}
         aria-expanded={expanded}
       >
         <div className="status-section-title">

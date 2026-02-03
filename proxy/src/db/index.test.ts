@@ -7,7 +7,7 @@ import { ProxyDatabase } from './index.js';
 
 describe('ProxyDatabase', () => {
   let testDir: string;
-  let db: ProxyDatabase;
+  let db: ProxyDatabase | undefined;
   let schemaPath: string;
 
   beforeEach(() => {
@@ -22,16 +22,13 @@ describe('ProxyDatabase', () => {
 
     // Create database - need to work around __dirname issue
     // ProxyDatabase reads schema from same dir as index.js
-    const dbPath = join(testDir, 'test.db');
 
     // We need to manually init since ProxyDatabase reads schema from __dirname
     // For testing, we'll use the actual ProxyDatabase pointing to a temp file
   });
 
   afterEach(() => {
-    if (db) {
-      db.close();
-    }
+    db?.close();
     rmSync(testDir, { recursive: true, force: true });
   });
 
@@ -53,11 +50,13 @@ describe('ProxyDatabase', () => {
 
       const key = db.getKey(id);
       expect(key).toBeDefined();
-      expect(key!.id).toBe(id);
-      expect(key!.vendor).toBe('openai');
-      expect(key!.label).toBe('Test Key');
-      expect(key!.tag).toBe('prod');
-      expect(Buffer.from(key!.secret_encrypted).equals(secretEncrypted)).toBe(true);
+      if (key) {
+        expect(key.id).toBe(id);
+        expect(key.vendor).toBe('openai');
+        expect(key.label).toBe('Test Key');
+        expect(key.tag).toBe('prod');
+        expect(Buffer.from(key.secret_encrypted).equals(secretEncrypted)).toBe(true);
+      }
     });
 
     it('should add key without label and tag', () => {
@@ -69,8 +68,10 @@ describe('ProxyDatabase', () => {
 
       const key = db.getKey(id);
       expect(key).toBeDefined();
-      expect(key!.label).toBeNull();
-      expect(key!.tag).toBeNull();
+      if (key) {
+        expect(key.label).toBeNull();
+        expect(key.tag).toBeNull();
+      }
     });
 
     it('should return undefined for non-existent key', () => {
@@ -175,10 +176,12 @@ describe('ProxyDatabase', () => {
 
       const bot = db.getBot(id);
       expect(bot).toBeDefined();
-      expect(bot!.id).toBe(id);
-      expect(bot!.hostname).toBe('test-bot');
-      expect(bot!.token_hash).toBe(tokenHash);
-      expect(bot!.tags).toBe('["prod","premium"]');
+      if (bot) {
+        expect(bot.id).toBe(id);
+        expect(bot.hostname).toBe('test-bot');
+        expect(bot.token_hash).toBe(tokenHash);
+        expect(bot.tags).toBe('["prod","premium"]');
+      }
     });
 
     it('should add bot without tags', () => {
@@ -189,7 +192,9 @@ describe('ProxyDatabase', () => {
 
       const bot = db.getBot(id);
       expect(bot).toBeDefined();
-      expect(bot!.tags).toBeNull();
+      if (bot) {
+        expect(bot.tags).toBeNull();
+      }
     });
 
     it('should get bot by token hash', () => {
@@ -201,7 +206,9 @@ describe('ProxyDatabase', () => {
 
       const bot = db.getBotByTokenHash(tokenHash);
       expect(bot).toBeDefined();
-      expect(bot!.id).toBe(id);
+      if (bot) {
+        expect(bot.id).toBe(id);
+      }
     });
 
     it('should return undefined for non-existent bot', () => {
@@ -229,7 +236,7 @@ describe('ProxyDatabase', () => {
       expect(updated).toBe(true);
 
       const bot = db.getBot(id);
-      expect(bot!.tags).toBe('["new-tag-1","new-tag-2"]');
+      expect(bot?.tags).toBe('["new-tag-1","new-tag-2"]');
     });
 
     it('should clear bot tags', () => {
@@ -240,7 +247,7 @@ describe('ProxyDatabase', () => {
       db.updateBotTags(id, null);
 
       const bot = db.getBot(id);
-      expect(bot!.tags).toBeNull();
+      expect(bot?.tags).toBeNull();
     });
 
     it('should delete a bot', () => {

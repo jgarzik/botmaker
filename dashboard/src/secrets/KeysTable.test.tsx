@@ -12,13 +12,13 @@ const mockKeys: ProxyKey[] = [
 
 describe('KeysTable', () => {
   it('should render empty state when no keys', () => {
-    render(<KeysTable keys={[]} onDelete={() => {}} />);
+    render(<KeysTable keys={[]} onDelete={() => { /* noop */ }} />);
 
     expect(screen.getByText('No API keys configured')).toBeInTheDocument();
   });
 
   it('should render table headers', () => {
-    render(<KeysTable keys={mockKeys} onDelete={() => {}} />);
+    render(<KeysTable keys={mockKeys} onDelete={() => { /* noop */ }} />);
 
     expect(screen.getByText('Vendor')).toBeInTheDocument();
     expect(screen.getByText('Label')).toBeInTheDocument();
@@ -27,7 +27,7 @@ describe('KeysTable', () => {
   });
 
   it('should render all keys', () => {
-    render(<KeysTable keys={mockKeys} onDelete={() => {}} />);
+    render(<KeysTable keys={mockKeys} onDelete={() => { /* noop */ }} />);
 
     expect(screen.getByText('OpenAI')).toBeInTheDocument();
     expect(screen.getByText('Anthropic')).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe('KeysTable', () => {
   });
 
   it('should display labels or dash for missing', () => {
-    render(<KeysTable keys={mockKeys} onDelete={() => {}} />);
+    render(<KeysTable keys={mockKeys} onDelete={() => { /* noop */ }} />);
 
     expect(screen.getByText('Production Key')).toBeInTheDocument();
     expect(screen.getByText('Test Key')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('KeysTable', () => {
   });
 
   it('should display tags or default for missing', () => {
-    render(<KeysTable keys={mockKeys} onDelete={() => {}} />);
+    render(<KeysTable keys={mockKeys} onDelete={() => { /* noop */ }} />);
 
     // Should have 'prod' appearing twice and 'dev' once
     const prodTags = screen.getAllByText('prod');
@@ -58,7 +58,7 @@ describe('KeysTable', () => {
   });
 
   it('should sort keys by created_at descending (newest first)', () => {
-    render(<KeysTable keys={mockKeys} onDelete={() => {}} />);
+    render(<KeysTable keys={mockKeys} onDelete={() => { /* noop */ }} />);
 
     const rows = screen.getAllByRole('row');
     // First row is header, so data rows start at index 1
@@ -90,7 +90,7 @@ describe('KeysTable', () => {
     const keys: ProxyKey[] = [
       { id: 'k1', vendor: 'openai', label: 'A', tag: null, created_at: 1 },
     ];
-    render(<KeysTable keys={keys} onDelete={() => {}} />);
+    render(<KeysTable keys={keys} onDelete={() => { /* noop */ }} />);
 
     expect(screen.getByText('OpenAI')).toBeInTheDocument();
   });
@@ -99,7 +99,7 @@ describe('KeysTable', () => {
     const keys: ProxyKey[] = [
       { id: 'k1', vendor: 'unknown-vendor', label: 'A', tag: null, created_at: 1 },
     ];
-    render(<KeysTable keys={keys} onDelete={() => {}} />);
+    render(<KeysTable keys={keys} onDelete={() => { /* noop */ }} />);
 
     // Should just display the vendor string as-is
     expect(screen.getByText('unknown-vendor')).toBeInTheDocument();

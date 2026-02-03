@@ -27,7 +27,7 @@ export function CleanupPanel() {
   };
 
   useEffect(() => {
-    loadOrphans();
+    void loadOrphans();
   }, []);
 
   const handleCleanup = async () => {
@@ -59,7 +59,7 @@ export function CleanupPanel() {
       ) : error ? (
         <div className="cleanup-panel-error">
           <span>{error}</span>
-          <Button size="sm" onClick={loadOrphans}>Retry</Button>
+          <Button size="sm" onClick={() => { void loadOrphans(); }}>Retry</Button>
         </div>
       ) : (
         <>
@@ -97,19 +97,19 @@ export function CleanupPanel() {
             <div className="cleanup-panel-actions">
               <Button
                 variant="danger"
-                onClick={handleCleanup}
+                onClick={() => { void handleCleanup(); }}
                 loading={cleaning}
                 disabled={cleaning}
               >
                 Clean Up {orphans.total} Resource{orphans.total !== 1 ? 's' : ''}
               </Button>
-              <Button variant="ghost" onClick={loadOrphans} disabled={cleaning}>
+              <Button variant="ghost" onClick={() => { void loadOrphans(); }} disabled={cleaning}>
                 Refresh
               </Button>
             </div>
           )}
 
-          {orphans && orphans.total === 0 && (
+          {orphans?.total === 0 && (
             <div className="cleanup-panel-clean">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />

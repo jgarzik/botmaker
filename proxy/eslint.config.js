@@ -1,7 +1,5 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -16,20 +14,14 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
+    files: ['src/**/*.ts'],
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       'no-console': 'off',
     },
   },
   {
-    ignores: ['dist/**', 'eslint.config.js', 'vite.config.ts'],
+    ignores: ['dist/**', 'eslint.config.js'],
   }
 );

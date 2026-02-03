@@ -45,7 +45,7 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
         <button
           type="button"
           className="emoji-picker-toggle"
-          onClick={() => setShowGrid(!showGrid)}
+          onClick={() => { setShowGrid(!showGrid); }}
         >
           {showGrid ? 'Hide' : 'Pick'}
         </button>
@@ -57,7 +57,7 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
               key={emoji}
               type="button"
               className={`emoji-picker-option ${value === emoji ? 'emoji-picker-option--selected' : ''}`}
-              onClick={() => handleEmojiSelect(emoji)}
+              onClick={() => { handleEmojiSelect(emoji); }}
             >
               {emoji}
             </button>

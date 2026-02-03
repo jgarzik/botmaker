@@ -19,8 +19,8 @@ export interface WizardState {
     sandboxTimeout: number;
     sessionScope: SessionScope;
   };
-  providerConfigs: Record<string, { model: string }>;
-  channelConfigs: Record<string, { token: string }>;
+  providerConfigs: Record<string, { model: string } | undefined>;
+  channelConfigs: Record<string, { token: string } | undefined>;
 }
 
 export interface ValidationResult {
@@ -67,7 +67,7 @@ export function validatePage(page: number, state: WizardState): ValidationResult
       // Config details
       for (const channelId of state.enabledChannels) {
         const config = state.channelConfigs[channelId];
-        if (!config?.token?.trim()) {
+        if (!config?.token.trim()) {
           return { valid: false, error: `Token required for ${channelId}` };
         }
       }
@@ -85,12 +85,12 @@ export function validatePage(page: number, state: WizardState): ValidationResult
 export function buildCreateBotInput(state: WizardState): CreateBotInput {
   const providers = state.enabledProviders.map((providerId) => ({
     providerId,
-    model: state.providerConfigs[providerId]?.model || '',
+    model: state.providerConfigs[providerId]?.model ?? '',
   }));
 
   const channels = state.enabledChannels.map((channelType) => ({
     channelType,
-    token: state.channelConfigs[channelType]?.token || '',
+    token: state.channelConfigs[channelType]?.token ?? '',
   }));
 
   return {

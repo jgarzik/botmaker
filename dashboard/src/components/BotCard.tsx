@@ -33,7 +33,7 @@ function formatDate(dateString: string): string {
 }
 
 export default function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProps) {
-  const containerState = bot.container_status?.state || bot.status;
+  const containerState = bot.container_status?.state ?? bot.status;
   const isRunning = bot.container_status?.running ?? bot.status === 'running';
 
   return (
@@ -63,7 +63,7 @@ export default function BotCard({ bot, onStart, onStop, onDelete, loading }: Bot
         {isRunning ? (
           <button
             className="btn btn-small"
-            onClick={() => onStop(bot.id)}
+            onClick={() => { onStop(bot.id); }}
             disabled={loading}
           >
             Stop
@@ -71,7 +71,7 @@ export default function BotCard({ bot, onStart, onStop, onDelete, loading }: Bot
         ) : (
           <button
             className="btn btn-small btn-primary"
-            onClick={() => onStart(bot.id)}
+            onClick={() => { onStart(bot.id); }}
             disabled={loading}
           >
             Start

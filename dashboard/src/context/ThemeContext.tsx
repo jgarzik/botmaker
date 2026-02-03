@@ -48,7 +48,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     };
 
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    return () => { mediaQuery.removeEventListener('change', handleChange); };
   }, []);
 
   // Apply theme to document
@@ -66,7 +66,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       root.classList.remove('theme-transitioning');
     }, 300);
 
-    return () => clearTimeout(timeout);
+    return () => { clearTimeout(timeout); };
   }, [resolvedTheme]);
 
   const setTheme = (newTheme: Theme) => {

@@ -33,7 +33,7 @@ export function SecretsTab() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   const handleAddKey = async (input: AddKeyInput) => {
@@ -91,7 +91,7 @@ export function SecretsTab() {
             <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 4h2v5H7V4zm0 6h2v2H7v-2z" />
           </svg>
           <span>{error}</span>
-          <button className="secrets-error-dismiss" onClick={() => setError(null)}>
+          <button className="secrets-error-dismiss" onClick={() => { setError(null); }}>
             Dismiss
           </button>
         </div>
@@ -113,7 +113,7 @@ export function SecretsTab() {
         <h2 className="secrets-title">API Keys ({keys.length})</h2>
         <button
           className="btn btn--md btn--primary"
-          onClick={() => setShowAddModal(true)}
+          onClick={() => { setShowAddModal(true); }}
         >
           Add Key
         </button>
@@ -132,14 +132,14 @@ export function SecretsTab() {
 
       <AddKeyModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => { setShowAddModal(false); }}
         onSubmit={handleAddKey}
         loading={addingKey}
       />
 
       <DeleteKeyModal
         isOpen={keyToDelete !== null}
-        onClose={() => setKeyToDelete(null)}
+        onClose={() => { setKeyToDelete(null); }}
         onConfirm={handleDeleteKey}
         keyToDelete={keyToDelete}
       />

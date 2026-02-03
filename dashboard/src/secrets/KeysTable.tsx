@@ -67,7 +67,7 @@ export function KeysTable({ keys, onDelete }: KeysTableProps) {
                 {VENDOR_NAMES[key.vendor] || key.vendor}
               </span>
             </td>
-            <td className="keys-table-label">{key.label || '—'}</td>
+            <td className="keys-table-label">{key.label ?? '—'}</td>
             <td>
               {key.tag ? (
                 <span className="keys-table-tag">{key.tag}</span>
@@ -79,7 +79,7 @@ export function KeysTable({ keys, onDelete }: KeysTableProps) {
             <td>
               <button
                 className="keys-table-delete"
-                onClick={() => onDelete(key)}
+                onClick={() => { onDelete(key); }}
                 title="Delete key"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">

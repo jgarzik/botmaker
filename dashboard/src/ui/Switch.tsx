@@ -17,7 +17,7 @@ export function Switch({
   id,
   ...props
 }: SwitchProps) {
-  const switchId = id || `switch-${Math.random().toString(36).substr(2, 9)}`;
+  const switchId = id ?? `switch-${Math.random().toString(36).substring(2, 11)}`;
 
   return (
     <label
@@ -29,7 +29,7 @@ export function Switch({
         id={switchId}
         className="switch-input"
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={(e) => { onChange(e.target.checked); }}
         disabled={disabled}
         {...props}
       />

@@ -24,7 +24,7 @@ export function StatusLight({
   label,
   showLabel = false,
 }: StatusLightProps) {
-  const displayLabel = label || statusLabels[status];
+  const displayLabel = label ?? statusLabels[status];
 
   return (
     <div className={`status-light-container status-light-${size}`}>

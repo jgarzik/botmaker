@@ -8,6 +8,41 @@ import { ProxyDatabase } from '../db/index.js';
 import { registerAdminRoutes } from './admin.js';
 import { hashToken, encrypt } from '../crypto/encryption.js';
 
+// Response type helpers
+interface ErrorResponse {
+  error: string;
+}
+
+interface OkResponse {
+  ok: boolean;
+}
+
+interface HealthResponse {
+  status: string;
+  keyCount: number;
+  botCount: number;
+}
+
+interface KeyIdResponse {
+  id: string;
+}
+
+interface TokenResponse {
+  token: string;
+}
+
+interface KeyListItem {
+  id: string;
+  vendor: string;
+  secret_encrypted?: unknown;
+}
+
+interface BotListItem {
+  id: string;
+  hostname: string;
+  token_hash?: unknown;
+}
+
 describe('Admin Routes', () => {
   let testDir: string;
   let db: ProxyDatabase;
@@ -51,7 +86,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(401);
-      expect(response.json().error).toBe('Missing authorization');
+      expect(response.json<ErrorResponse>().error).toBe('Missing authorization');
     });
 
     it('should reject requests with invalid auth format', async () => {
@@ -62,7 +97,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(401);
-      expect(response.json().error).toBe('Missing authorization');
+      expect(response.json<ErrorResponse>().error).toBe('Missing authorization');
     });
 
     it('should reject requests with wrong token', async () => {
@@ -73,7 +108,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(403);
-      expect(response.json().error).toBe('Invalid admin token');
+      expect(response.json<ErrorResponse>().error).toBe('Invalid admin token');
     });
 
     it('should accept requests with valid token', async () => {
@@ -96,7 +131,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      const body = response.json();
+      const body = response.json<HealthResponse>();
       expect(body.status).toBe('ok');
       expect(body.keyCount).toBe(0);
       expect(body.botCount).toBe(0);
@@ -114,7 +149,7 @@ describe('Admin Routes', () => {
         headers: authHeaders(),
       });
 
-      const body = response.json();
+      const body = response.json<HealthResponse>();
       expect(body.keyCount).toBe(2);
       expect(body.botCount).toBe(1);
     });
@@ -135,15 +170,17 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      const body = response.json();
+      const body = response.json<KeyIdResponse>();
       expect(body.id).toBeDefined();
 
       // Verify key was added
       const key = db.getKey(body.id);
       expect(key).toBeDefined();
-      expect(key!.vendor).toBe('openai');
-      expect(key!.label).toBe('Test Key');
-      expect(key!.tag).toBe('prod');
+      if (key) {
+        expect(key.vendor).toBe('openai');
+        expect(key.label).toBe('Test Key');
+        expect(key.tag).toBe('prod');
+      }
     });
 
     it('should reject missing vendor', async () => {
@@ -155,7 +192,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(400);
-      expect(response.json().error).toBe('Missing vendor or secret');
+      expect(response.json<ErrorResponse>().error).toBe('Missing vendor or secret');
     });
 
     it('should reject missing secret', async () => {
@@ -167,7 +204,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(400);
-      expect(response.json().error).toBe('Missing vendor or secret');
+      expect(response.json<ErrorResponse>().error).toBe('Missing vendor or secret');
     });
 
     it('should reject unknown vendor', async () => {
@@ -179,7 +216,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(400);
-      expect(response.json().error).toContain('Unknown vendor');
+      expect(response.json<ErrorResponse>().error).toContain('Unknown vendor');
     });
   });
 
@@ -195,7 +232,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      const body = response.json();
+      const body = response.json<KeyListItem[]>();
       expect(body).toHaveLength(2);
       // Keys should NOT include secret_encrypted in response
       expect(body[0].id).toBeDefined();
@@ -226,7 +263,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(response.json().ok).toBe(true);
+      expect(response.json<OkResponse>().ok).toBe(true);
 
       // Verify key was deleted
       expect(db.getKey('key-to-delete')).toBeUndefined();
@@ -240,7 +277,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(response.json().error).toBe('Key not found');
+      expect(response.json<ErrorResponse>().error).toBe('Key not found');
     });
   });
 
@@ -258,15 +295,17 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      const body = response.json();
+      const body = response.json<TokenResponse>();
       expect(body.token).toBeDefined();
       expect(body.token.length).toBe(64); // 32 bytes hex
 
       // Verify bot was added
       const bot = db.getBot('bot-123');
       expect(bot).toBeDefined();
-      expect(bot!.hostname).toBe('test-bot');
-      expect(bot!.tags).toBe('["prod","premium"]');
+      if (bot) {
+        expect(bot.hostname).toBe('test-bot');
+        expect(bot.tags).toBe('["prod","premium"]');
+      }
     });
 
     it('should reject missing botId', async () => {
@@ -278,7 +317,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(400);
-      expect(response.json().error).toBe('Missing botId or hostname');
+      expect(response.json<ErrorResponse>().error).toBe('Missing botId or hostname');
     });
 
     it('should reject missing hostname', async () => {
@@ -290,7 +329,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(400);
-      expect(response.json().error).toBe('Missing botId or hostname');
+      expect(response.json<ErrorResponse>().error).toBe('Missing botId or hostname');
     });
 
     it('should reject duplicate bot', async () => {
@@ -304,7 +343,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(409);
-      expect(response.json().error).toBe('Bot already registered');
+      expect(response.json<ErrorResponse>().error).toBe('Bot already registered');
     });
   });
 
@@ -320,7 +359,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      const body = response.json();
+      const body = response.json<BotListItem[]>();
       expect(body).toHaveLength(2);
       // Should NOT include token_hash in response
       expect(body[0].id).toBeDefined();
@@ -340,7 +379,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(response.json().ok).toBe(true);
+      expect(response.json<OkResponse>().ok).toBe(true);
 
       // Verify bot was deleted
       expect(db.getBot('bot-to-delete')).toBeUndefined();
@@ -354,7 +393,7 @@ describe('Admin Routes', () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(response.json().error).toBe('Bot not found');
+      expect(response.json<ErrorResponse>().error).toBe('Bot not found');
     });
   });
 });

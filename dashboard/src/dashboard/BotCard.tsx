@@ -60,7 +60,7 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
     } else {
       setConfirmDelete(true);
       // Reset after 3 seconds
-      setTimeout(() => setConfirmDelete(false), 3000);
+      setTimeout(() => { setConfirmDelete(false); }, 3000);
     }
   };
 
@@ -115,7 +115,7 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
         {isRunning ? (
           <Button
             size="sm"
-            onClick={() => onStop(bot.hostname)}
+            onClick={() => { onStop(bot.hostname); }}
             disabled={loading}
             loading={loading}
           >
@@ -125,7 +125,7 @@ export function BotCard({ bot, onStart, onStop, onDelete, loading }: BotCardProp
           <Button
             size="sm"
             variant="primary"
-            onClick={() => onStart(bot.hostname)}
+            onClick={() => { onStart(bot.hostname); }}
             disabled={loading}
             loading={loading}
           >

@@ -31,7 +31,7 @@ export function Modal({
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen, onClose]);
 
   // Focus trap and body scroll lock
@@ -46,7 +46,7 @@ export function Modal({
 
     return () => {
       document.body.style.overflow = '';
-      previouslyFocused?.focus();
+      previouslyFocused.focus();
     };
   }, [isOpen]);
 

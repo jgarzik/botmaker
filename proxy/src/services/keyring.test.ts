@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -47,7 +47,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKey('openai');
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('sk-test-123');
+      if (result) {
+        expect(result.secret).toBe('sk-test-123');
+      }
     });
 
     it('should return null for vendor with no keys', () => {
@@ -56,13 +58,16 @@ describe('KeyringService', () => {
     });
 
     it('should round-robin between keys', () => {
-      const key1 = addTestKey('openai', 'key-1');
-      const key2 = addTestKey('openai', 'key-2');
-      const key3 = addTestKey('openai', 'key-3');
+      addTestKey('openai', 'key-1');
+      addTestKey('openai', 'key-2');
+      addTestKey('openai', 'key-3');
 
       const results = [];
       for (let i = 0; i < 6; i++) {
-        results.push(keyring.selectKey('openai')!.secret);
+        const selection = keyring.selectKey('openai');
+        if (selection) {
+          results.push(selection.secret);
+        }
       }
 
       // Should cycle through all keys
@@ -85,7 +90,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKeyForBot('openai', ['prod']);
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('prod-key');
+      if (result) {
+        expect(result.secret).toBe('prod-key');
+      }
     });
 
     it('should try tags in order', () => {
@@ -97,7 +104,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKeyForBot('openai', ['prod', 'dev']);
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('prod-key');
+      if (result) {
+        expect(result.secret).toBe('prod-key');
+      }
     });
 
     it('should fallback to untagged keys when no tag match', () => {
@@ -107,7 +116,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKeyForBot('openai', ['staging']); // No matching tag
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('default-key');
+      if (result) {
+        expect(result.secret).toBe('default-key');
+      }
     });
 
     it('should fallback to any key when no untagged keys', () => {
@@ -116,7 +127,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKeyForBot('openai', ['staging']); // No match
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('prod-key');
+      if (result) {
+        expect(result.secret).toBe('prod-key');
+      }
     });
 
     it('should use default keys when bot has no tags', () => {
@@ -126,7 +139,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKeyForBot('openai', null);
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('default-key');
+      if (result) {
+        expect(result.secret).toBe('default-key');
+      }
     });
 
     it('should use default keys when bot has empty tags', () => {
@@ -136,7 +151,9 @@ describe('KeyringService', () => {
       const result = keyring.selectKeyForBot('openai', []);
 
       expect(result).not.toBeNull();
-      expect(result!.secret).toBe('default-key');
+      if (result) {
+        expect(result.secret).toBe('default-key');
+      }
     });
 
     it('should return null when no keys exist', () => {
@@ -151,7 +168,10 @@ describe('KeyringService', () => {
 
       const results = [];
       for (let i = 0; i < 6; i++) {
-        results.push(keyring.selectKeyForBot('openai', ['prod'])!.secret);
+        const selection = keyring.selectKeyForBot('openai', ['prod']);
+        if (selection) {
+          results.push(selection.secret);
+        }
       }
 
       // Should have all three keys
@@ -174,7 +194,7 @@ describe('KeyringService', () => {
       const devResult = keyring.selectKeyForBot('openai', ['dev']);
 
       // Both should be consistent in their rotation
-      expect(devResult!.secret).toBe('dev-1');
+      expect(devResult?.secret).toBe('dev-1');
     });
 
     it('should handle multiple vendors correctly', () => {
@@ -184,8 +204,8 @@ describe('KeyringService', () => {
       const openaiResult = keyring.selectKeyForBot('openai', ['prod']);
       const anthropicResult = keyring.selectKeyForBot('anthropic', ['prod']);
 
-      expect(openaiResult!.secret).toBe('openai-key');
-      expect(anthropicResult!.secret).toBe('anthropic-key');
+      expect(openaiResult?.secret).toBe('openai-key');
+      expect(anthropicResult?.secret).toBe('anthropic-key');
     });
   });
 });

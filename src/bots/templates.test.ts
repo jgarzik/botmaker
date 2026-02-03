@@ -102,10 +102,11 @@ describe('templates', () => {
 
       expect(openclawConfig.models).toEqual({
         providers: {
-          openai: {
+          'openai-proxy': {
             baseUrl: 'http://proxy:9101/v1',
             apiKey: 'proxy-token-123',
-            models: ['gpt-4'],
+            api: 'openai-responses',
+            models: [{ id: 'gpt-4', name: 'gpt-4' }],
           },
         },
       });

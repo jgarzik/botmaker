@@ -58,7 +58,7 @@ export function TabNav({ activeTab, onTabChange }: TabNavProps) {
         <button
           key={tab.id}
           className={`tab-nav-item ${activeTab === tab.id ? 'tab-nav-item--active' : ''}`}
-          onClick={() => onTabChange(tab.id)}
+          onClick={() => { onTabChange(tab.id); }}
           role="tab"
           aria-selected={activeTab === tab.id}
           aria-controls={`${tab.id}-panel`}

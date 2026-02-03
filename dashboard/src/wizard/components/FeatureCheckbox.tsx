@@ -17,7 +17,7 @@ export function FeatureCheckbox({ id, label, icon, checked, onChange, hint }: Fe
         id={id}
         className="feature-checkbox-input"
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={(e) => { onChange(e.target.checked); }}
       />
       <span className="feature-checkbox-box">
         {checked && (

@@ -15,7 +15,7 @@ export function CollapsibleSection({ title, defaultOpen = true, children }: Coll
       <button
         type="button"
         className="collapsible-section-header"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { setIsOpen(!isOpen); }}
       >
         <span className="collapsible-section-title">{title}</span>
         <svg

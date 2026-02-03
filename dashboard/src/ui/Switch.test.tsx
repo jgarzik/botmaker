@@ -4,15 +4,15 @@ import { Switch } from './Switch';
 
 describe('Switch', () => {
   it('should render as checkbox', () => {
-    render(<Switch checked={false} onChange={() => {}} />);
+    render(<Switch checked={false} onChange={() => { /* noop */ }} />);
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 
   it('should reflect checked state', () => {
-    const { rerender } = render(<Switch checked={false} onChange={() => {}} />);
+    const { rerender } = render(<Switch checked={false} onChange={() => { /* noop */ }} />);
     expect(screen.getByRole('checkbox')).not.toBeChecked();
 
-    rerender(<Switch checked={true} onChange={() => {}} />);
+    rerender(<Switch checked={true} onChange={() => { /* noop */ }} />);
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
@@ -35,18 +35,18 @@ describe('Switch', () => {
   });
 
   it('should render label when provided', () => {
-    render(<Switch checked={false} onChange={() => {}} label="Enable feature" />);
+    render(<Switch checked={false} onChange={() => { /* noop */ }} label="Enable feature" />);
     expect(screen.getByText('Enable feature')).toBeInTheDocument();
   });
 
   it('should apply sm size class', () => {
-    render(<Switch checked={false} onChange={() => {}} size="sm" />);
+    render(<Switch checked={false} onChange={() => { /* noop */ }} size="sm" />);
     const label = screen.getByRole('checkbox').closest('label');
     expect(label).toHaveClass('switch--sm');
   });
 
   it('should apply md size class by default', () => {
-    render(<Switch checked={false} onChange={() => {}} />);
+    render(<Switch checked={false} onChange={() => { /* noop */ }} />);
     const label = screen.getByRole('checkbox').closest('label');
     expect(label).toHaveClass('switch--md');
   });
@@ -63,15 +63,15 @@ describe('Switch', () => {
   });
 
   it('should use provided id', () => {
-    render(<Switch checked={false} onChange={() => {}} id="custom-switch" />);
+    render(<Switch checked={false} onChange={() => { /* noop */ }} id="custom-switch" />);
     expect(screen.getByRole('checkbox')).toHaveAttribute('id', 'custom-switch');
   });
 
   it('should generate unique id when not provided', () => {
     render(
       <>
-        <Switch checked={false} onChange={() => {}} />
-        <Switch checked={false} onChange={() => {}} />
+        <Switch checked={false} onChange={() => { /* noop */ }} />
+        <Switch checked={false} onChange={() => { /* noop */ }} />
       </>
     );
 
@@ -82,7 +82,7 @@ describe('Switch', () => {
   });
 
   it('should pass through additional props', () => {
-    render(<Switch checked={false} onChange={() => {}} aria-label="Toggle switch" />);
+    render(<Switch checked={false} onChange={() => { /* noop */ }} aria-label="Toggle switch" />);
     expect(screen.getByRole('checkbox')).toHaveAttribute('aria-label', 'Toggle switch');
   });
 });

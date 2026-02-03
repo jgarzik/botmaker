@@ -49,7 +49,7 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
   };
 
   return (
-    <form className="add-key-form" onSubmit={handleSubmit}>
+    <form className="add-key-form" onSubmit={(e) => { void handleSubmit(e); }}>
       {error && (
         <div className="add-key-error">
           {error}
@@ -61,7 +61,7 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
         <select
           id="vendor"
           value={vendor}
-          onChange={(e) => setVendor(e.target.value)}
+          onChange={(e) => { setVendor(e.target.value); }}
           disabled={loading}
         >
           {VENDORS.map((v) => (
@@ -78,7 +78,7 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
           id="secret"
           type="password"
           value={secret}
-          onChange={(e) => setSecret(e.target.value)}
+          onChange={(e) => { setSecret(e.target.value); }}
           placeholder="sk-..."
           disabled={loading}
           autoComplete="off"
@@ -91,7 +91,7 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
           id="label"
           type="text"
           value={label}
-          onChange={(e) => setLabel(e.target.value)}
+          onChange={(e) => { setLabel(e.target.value); }}
           placeholder="Production key"
           disabled={loading}
         />
@@ -104,7 +104,7 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
           id="tag"
           type="text"
           value={tag}
-          onChange={(e) => setTag(e.target.value)}
+          onChange={(e) => { setTag(e.target.value); }}
           placeholder="prod"
           disabled={loading}
         />

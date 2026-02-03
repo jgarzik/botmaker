@@ -23,7 +23,7 @@ function WizardContent({ onClose, onSubmit }: CreateWizardProps) {
   const handleNext = () => {
     const result = validate(step);
     if (!result.valid) {
-      setError(result.error || 'Validation failed');
+      setError(result.error ?? 'Validation failed');
       return;
     }
     setError('');
@@ -38,7 +38,7 @@ function WizardContent({ onClose, onSubmit }: CreateWizardProps) {
   const handleSubmit = async () => {
     const result = validate(step);
     if (!result.valid) {
-      setError(result.error || 'Validation failed');
+      setError(result.error ?? 'Validation failed');
       return;
     }
 
@@ -89,7 +89,7 @@ function WizardContent({ onClose, onSubmit }: CreateWizardProps) {
       ) : (
         <Button
           variant="primary"
-          onClick={handleSubmit}
+          onClick={() => { void handleSubmit(); }}
           loading={submitting}
         >
           Create Bot

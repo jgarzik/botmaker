@@ -5,7 +5,7 @@ import { AddKeyForm } from './AddKeyForm';
 describe('AddKeyForm', () => {
   const defaultProps = {
     onSubmit: () => Promise.resolve(),
-    onCancel: () => {},
+    onCancel: () => { /* noop */ },
     loading: false,
   };
 
@@ -32,7 +32,7 @@ describe('AddKeyForm', () => {
   it('should default vendor to openai', () => {
     render(<AddKeyForm {...defaultProps} />);
 
-    const select = screen.getByLabelText('Provider') as HTMLSelectElement;
+    const select = screen.getByLabelText('Provider');
     expect(select.value).toBe('openai');
   });
 
@@ -57,7 +57,7 @@ describe('AddKeyForm', () => {
     });
   });
 
-  it('should show error when API key is empty', async () => {
+  it('should show error when API key is empty', () => {
     const handleSubmit = vi.fn();
     render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
@@ -66,7 +66,7 @@ describe('AddKeyForm', () => {
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 
-  it('should show error when API key is whitespace', async () => {
+  it('should show error when API key is whitespace', () => {
     const handleSubmit = vi.fn();
     render(<AddKeyForm {...defaultProps} onSubmit={handleSubmit} />);
 
@@ -114,9 +114,9 @@ describe('AddKeyForm', () => {
       expect(handleSubmit).toHaveBeenCalled();
     });
 
-    const secretInput = screen.getByLabelText('API Key *') as HTMLInputElement;
-    const labelInput = screen.getByLabelText('Label') as HTMLInputElement;
-    const tagInput = screen.getByLabelText('Tag') as HTMLInputElement;
+    const secretInput = screen.getByLabelText('API Key *');
+    const labelInput = screen.getByLabelText('Label');
+    const tagInput = screen.getByLabelText('Tag');
 
     expect(secretInput.value).toBe('');
     expect(labelInput.value).toBe('');

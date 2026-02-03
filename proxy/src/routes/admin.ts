@@ -38,7 +38,7 @@ export function registerAdminRoutes(
 ): void {
   app.addHook('preHandler', async (req: FastifyRequest, reply: FastifyReply) => {
     const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) {
+    if (!auth?.startsWith('Bearer ')) {
       reply.status(401).send({ error: 'Missing authorization' });
       return;
     }
@@ -50,7 +50,7 @@ export function registerAdminRoutes(
     }
   });
 
-  app.get('/admin/health', async () => {
+  app.get('/admin/health', () => {
     return {
       status: 'ok',
       keyCount: db.countKeys(),
@@ -66,7 +66,7 @@ export function registerAdminRoutes(
       return;
     }
 
-    if (!VENDOR_CONFIGS[body.vendor]) {
+    if (!(body.vendor in VENDOR_CONFIGS)) {
       reply.status(400).send({ error: `Unknown vendor: ${body.vendor}` });
       return;
     }
@@ -79,7 +79,7 @@ export function registerAdminRoutes(
     return { id };
   });
 
-  app.get('/admin/keys', async () => {
+  app.get('/admin/keys', () => {
     return db.listKeys();
   });
 
@@ -117,7 +117,7 @@ export function registerAdminRoutes(
     return { token };
   });
 
-  app.get('/admin/bots', async () => {
+  app.get('/admin/bots', () => {
     return db.listBots();
   });
 

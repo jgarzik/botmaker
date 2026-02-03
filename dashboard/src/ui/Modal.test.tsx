@@ -13,7 +13,7 @@ describe('Modal', () => {
 
   it('should not render when isOpen is false', () => {
     render(
-      <Modal isOpen={false} onClose={() => {}}>
+      <Modal isOpen={false} onClose={() => { /* noop */ }}>
         Content
       </Modal>
     );
@@ -23,7 +23,7 @@ describe('Modal', () => {
 
   it('should render when isOpen is true', () => {
     render(
-      <Modal isOpen={true} onClose={() => {}}>
+      <Modal isOpen={true} onClose={() => { /* noop */ }}>
         Modal Content
       </Modal>
     );
@@ -33,7 +33,7 @@ describe('Modal', () => {
 
   it('should render title when provided', () => {
     render(
-      <Modal isOpen={true} onClose={() => {}} title="Modal Title">
+      <Modal isOpen={true} onClose={() => { /* noop */ }} title="Modal Title">
         Content
       </Modal>
     );
@@ -43,7 +43,7 @@ describe('Modal', () => {
 
   it('should render footer when provided', () => {
     render(
-      <Modal isOpen={true} onClose={() => {}} footer={<button>Save</button>}>
+      <Modal isOpen={true} onClose={() => { /* noop */ }} footer={<button>Save</button>}>
         Content
       </Modal>
     );
@@ -109,7 +109,7 @@ describe('Modal', () => {
 
   it('should lock body scroll when open', () => {
     render(
-      <Modal isOpen={true} onClose={() => {}}>
+      <Modal isOpen={true} onClose={() => { /* noop */ }}>
         Content
       </Modal>
     );
@@ -119,13 +119,13 @@ describe('Modal', () => {
 
   it('should unlock body scroll when closed', () => {
     const { rerender } = render(
-      <Modal isOpen={true} onClose={() => {}}>
+      <Modal isOpen={true} onClose={() => { /* noop */ }}>
         Content
       </Modal>
     );
 
     rerender(
-      <Modal isOpen={false} onClose={() => {}}>
+      <Modal isOpen={false} onClose={() => { /* noop */ }}>
         Content
       </Modal>
     );
@@ -135,7 +135,7 @@ describe('Modal', () => {
 
   it('should apply size classes', () => {
     const { rerender } = render(
-      <Modal isOpen={true} onClose={() => {}} size="sm">
+      <Modal isOpen={true} onClose={() => { /* noop */ }} size="sm">
         Content
       </Modal>
     );
@@ -143,7 +143,7 @@ describe('Modal', () => {
     expect(screen.getByRole('dialog')).toHaveClass('modal--sm');
 
     rerender(
-      <Modal isOpen={true} onClose={() => {}} size="md">
+      <Modal isOpen={true} onClose={() => { /* noop */ }} size="md">
         Content
       </Modal>
     );
@@ -151,7 +151,7 @@ describe('Modal', () => {
     expect(screen.getByRole('dialog')).toHaveClass('modal--md');
 
     rerender(
-      <Modal isOpen={true} onClose={() => {}} size="lg">
+      <Modal isOpen={true} onClose={() => { /* noop */ }} size="lg">
         Content
       </Modal>
     );
@@ -161,7 +161,7 @@ describe('Modal', () => {
 
   it('should have proper accessibility attributes', () => {
     render(
-      <Modal isOpen={true} onClose={() => {}} title="Accessible Modal">
+      <Modal isOpen={true} onClose={() => { /* noop */ }} title="Accessible Modal">
         Content
       </Modal>
     );

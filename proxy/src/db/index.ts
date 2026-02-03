@@ -57,10 +57,10 @@ export class ProxyDatabase {
     `).all(vendor) as ProviderKey[];
   }
 
-  listKeys(): Array<{ id: string; vendor: string; label: string | null; tag: string | null; created_at: number }> {
+  listKeys(): { id: string; vendor: string; label: string | null; tag: string | null; created_at: number }[] {
     return this.db.prepare(`
       SELECT id, vendor, label, tag, created_at FROM provider_keys ORDER BY created_at DESC
-    `).all() as Array<{ id: string; vendor: string; label: string | null; tag: string | null; created_at: number }>;
+    `).all() as { id: string; vendor: string; label: string | null; tag: string | null; created_at: number }[];
   }
 
   deleteKey(id: string): boolean {
@@ -102,10 +102,10 @@ export class ProxyDatabase {
     `).get(tokenHash) as Bot | undefined;
   }
 
-  listBots(): Array<{ id: string; hostname: string; tags: string | null }> {
+  listBots(): { id: string; hostname: string; tags: string | null }[] {
     return this.db.prepare(`
       SELECT id, hostname, tags FROM bots ORDER BY created_at DESC
-    `).all() as Array<{ id: string; hostname: string; tags: string | null }>;
+    `).all() as { id: string; hostname: string; tags: string | null }[];
   }
 
   deleteBot(id: string): boolean {

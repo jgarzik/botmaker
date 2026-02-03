@@ -25,7 +25,7 @@ export default function App() {
     <Shell
       header={
         <>
-          <Header onCreateClick={() => setShowWizard(true)} />
+          <Header onCreateClick={() => { setShowWizard(true); }} />
           <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
         </>
       }
@@ -36,10 +36,10 @@ export default function App() {
           loading={loading}
           actionLoading={actionLoading}
           error={error}
-          onStart={handleStart}
-          onStop={handleStop}
-          onDelete={handleDelete}
-          onCreateClick={() => setShowWizard(true)}
+          onStart={(id) => { void handleStart(id); }}
+          onStop={(id) => { void handleStop(id); }}
+          onDelete={(id) => { void handleDelete(id); }}
+          onCreateClick={() => { setShowWizard(true); }}
         />
       )}
 
@@ -49,7 +49,7 @@ export default function App() {
 
       {showWizard && (
         <CreateWizard
-          onClose={() => setShowWizard(false)}
+          onClose={() => { setShowWizard(false); }}
           onSubmit={handleCreate}
         />
       )}

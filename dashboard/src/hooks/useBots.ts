@@ -34,11 +34,11 @@ export function useBots(): UseBotsReturn {
   }, []);
 
   useEffect(() => {
-    loadBots();
+    void loadBots();
 
     // Poll for updates every 5 seconds
-    const interval = setInterval(loadBots, 5000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => { void loadBots(); }, 5000);
+    return () => { clearInterval(interval); };
   }, [loadBots]);
 
   const handleCreate = async (input: CreateBotInput) => {
@@ -82,7 +82,7 @@ export function useBots(): UseBotsReturn {
     }
   };
 
-  const clearError = () => setError('');
+  const clearError = () => { setError(''); };
 
   return {
     bots,

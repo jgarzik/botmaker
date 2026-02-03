@@ -23,9 +23,9 @@ export function HealthStatus() {
   };
 
   useEffect(() => {
-    checkHealthStatus();
-    const interval = setInterval(checkHealthStatus, 30000);
-    return () => clearInterval(interval);
+    void checkHealthStatus();
+    const interval = setInterval(() => { void checkHealthStatus(); }, 30000);
+    return () => { clearInterval(interval); };
   }, []);
 
   return (

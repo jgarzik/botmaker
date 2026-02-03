@@ -16,15 +16,15 @@ export function registerProxyRoutes(
     const path = '/' + (req.params as { '*': string })['*'];
 
     // Validate vendor
-    const vendorConfig = VENDOR_CONFIGS[vendor];
-    if (!vendorConfig) {
+    if (!(vendor in VENDOR_CONFIGS)) {
       reply.status(400).send({ error: `Unknown vendor: ${vendor}` });
       return;
     }
+    const vendorConfig = VENDOR_CONFIGS[vendor];
 
     // Extract and validate bot token
     const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) {
+    if (!auth?.startsWith('Bearer ')) {
       reply.status(401).send({ error: 'Missing authorization' });
       return;
     }
@@ -43,7 +43,7 @@ export function registerProxyRoutes(
     let botTags: string[] | null = null;
     if (bot.tags) {
       try {
-        botTags = JSON.parse(bot.tags);
+        botTags = JSON.parse(bot.tags) as string[];
       } catch {
         reply.status(500).send({ error: 'Invalid bot tags configuration' });
         return;

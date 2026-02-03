@@ -40,13 +40,13 @@ export function Page4Config() {
           {state.enabledProviders.map((providerId) => {
             const provider = getProvider(providerId);
             const models = getModels(providerId);
-            const config = state.providerConfigs[providerId] || { model: '' };
+            const config = state.providerConfigs[providerId] ?? { model: '' };
 
             return (
               <ConfigSection
                 key={providerId}
-                icon={provider?.label.charAt(0) || '?'}
-                title={provider?.label || providerId}
+                icon={provider?.label.charAt(0) ?? '?'}
+                title={provider?.label ?? providerId}
                 hint={provider?.baseUrl}
               >
                 <div className="wizard-form-group">
@@ -54,11 +54,11 @@ export function Page4Config() {
                   <select
                     className="wizard-select"
                     value={config.model}
-                    onChange={(e) => handleModelChange(providerId, e.target.value)}
+                    onChange={(e) => { handleModelChange(providerId, e.target.value); }}
                   >
                     {models.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {m.label || m.id}
+                        {m.label ?? m.id}
                       </option>
                     ))}
                   </select>
@@ -74,13 +74,13 @@ export function Page4Config() {
           <h4 className="page4-section-title">Channel Configuration</h4>
           {state.enabledChannels.map((channelId) => {
             const channel = getChannel(channelId);
-            const config = state.channelConfigs[channelId] || { token: '' };
+            const config = state.channelConfigs[channelId] ?? { token: '' };
 
             return (
               <ConfigSection
                 key={channelId}
-                icon={channel?.icon || '?'}
-                title={channel?.label || channelId}
+                icon={channel?.icon ?? '?'}
+                title={channel?.label ?? channelId}
                 hint={channel?.tokenHint}
               >
                 <div className="wizard-form-group">
@@ -89,8 +89,8 @@ export function Page4Config() {
                     type="password"
                     className="wizard-input"
                     value={config.token}
-                    onChange={(e) => handleTokenChange(channelId, e.target.value)}
-                    placeholder={channel?.tokenPlaceholder || 'Token...'}
+                    onChange={(e) => { handleTokenChange(channelId, e.target.value); }}
+                    placeholder={channel?.tokenPlaceholder ?? 'Token...'}
                   />
                 </div>
               </ConfigSection>
@@ -110,7 +110,7 @@ export function Page4Config() {
                 <select
                   className="wizard-select"
                   value={state.features.ttsVoice}
-                  onChange={(e) => handleTtsVoiceChange(e.target.value)}
+                  onChange={(e) => { handleTtsVoiceChange(e.target.value); }}
                 >
                   {TTS_VOICES.map((voice) => (
                     <option key={voice.id} value={voice.id}>
@@ -130,7 +130,7 @@ export function Page4Config() {
                   type="number"
                   className="wizard-input"
                   value={state.features.sandboxTimeout}
-                  onChange={(e) => handleSandboxTimeoutChange(parseInt(e.target.value) || 30)}
+                  onChange={(e) => { handleSandboxTimeoutChange(parseInt(e.target.value) || 30); }}
                   min={5}
                   max={300}
                 />

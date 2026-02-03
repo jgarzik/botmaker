@@ -40,7 +40,7 @@ export function Page1Templates() {
           className="wizard-input page1-search-input"
           placeholder="Search templates..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => { setSearchQuery(e.target.value); }}
         />
       </div>
 
@@ -48,14 +48,14 @@ export function Page1Templates() {
         <TemplateCard
           template={SCRATCH_TEMPLATE}
           selected={state.selectedTemplateId === 'scratch'}
-          onSelect={() => handleSelect('scratch')}
+          onSelect={() => { handleSelect('scratch'); }}
         />
         {filteredTemplates.map((template) => (
           <TemplateCard
             key={template.id}
             template={template}
             selected={state.selectedTemplateId === template.id}
-            onSelect={() => handleSelect(template.id)}
+            onSelect={() => { handleSelect(template.id); }}
           />
         ))}
       </div>

@@ -64,7 +64,7 @@ describe('Database Migrations', () => {
       runMigrations(db);
 
       const version = getMigrationVersion();
-      expect(version).toBe(3); // v0, v1, v2, v3
+      expect(version).toBe(4); // v0, v1, v2, v3, v4
     });
 
     it('should add port column (v1)', () => {
@@ -102,7 +102,7 @@ describe('Database Migrations', () => {
       runMigrations(db);
 
       const version = getMigrationVersion();
-      expect(version).toBe(3);
+      expect(version).toBe(4);
     });
 
     it('should not duplicate migration records', () => {
@@ -111,7 +111,7 @@ describe('Database Migrations', () => {
       runMigrations(db);
 
       const count = db.prepare('SELECT COUNT(*) as count FROM migrations').get() as { count: number };
-      expect(count.count).toBe(4); // v0, v1, v2, v3
+      expect(count.count).toBe(5); // v0, v1, v2, v3, v4
     });
   });
 
@@ -162,7 +162,7 @@ describe('Database Migrations', () => {
       expect(columns).toContain('tags');
 
       const version = getMigrationVersion();
-      expect(version).toBe(3);
+      expect(version).toBe(4);
     });
   });
 });

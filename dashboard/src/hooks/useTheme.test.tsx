@@ -47,7 +47,7 @@ describe('useTheme', () => {
 
   it('should throw when used outside provider', () => {
     // Suppress error output
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { /* noop */ });
 
     expect(() => {
       renderHook(() => useTheme());

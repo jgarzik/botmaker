@@ -60,11 +60,11 @@ export function Page5Summary() {
               const config = state.providerConfigs[providerId];
               return (
                 <div key={providerId} className="page5-list-item">
-                  <span className="page5-list-icon">{provider?.label.charAt(0)}</span>
+                  <span className="page5-list-icon">{provider?.label.charAt(0) ?? ''}</span>
                   <div className="page5-list-content">
-                    <span className="page5-list-title">{provider?.label || providerId}</span>
+                    <span className="page5-list-title">{provider?.label ?? providerId}</span>
                     <span className="page5-list-subtitle">
-                      Model: {config?.model || 'default'}
+                      Model: {config.model || 'default'}
                     </span>
                   </div>
                 </div>
@@ -86,9 +86,9 @@ export function Page5Summary() {
                 <div key={channelId} className="page5-list-item">
                   <span className="page5-list-icon">{channel?.icon}</span>
                   <div className="page5-list-content">
-                    <span className="page5-list-title">{channel?.label || channelId}</span>
+                    <span className="page5-list-title">{channel?.label ?? channelId}</span>
                     <span className="page5-list-subtitle">
-                      Token: {maskToken(config?.token || '')}
+                      Token: {maskToken(config.token || '')}
                     </span>
                   </div>
                 </div>

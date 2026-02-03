@@ -53,7 +53,7 @@ export function Page3Toggles() {
               id={`provider-${provider.id}`}
               label={provider.label}
               checked={state.enabledProviders.includes(provider.id)}
-              onChange={() => handleProviderToggle(provider.id)}
+              onChange={() => { handleProviderToggle(provider.id); }}
             />
           ))}
         </div>
@@ -62,7 +62,7 @@ export function Page3Toggles() {
             <button
               type="button"
               className="page3-show-more"
-              onClick={() => setShowAllProviders(!showAllProviders)}
+              onClick={() => { setShowAllProviders(!showAllProviders); }}
             >
               {showAllProviders ? 'Show less' : `Show all (${otherProviders.length} more)`}
             </button>
@@ -74,7 +74,7 @@ export function Page3Toggles() {
                     id={`provider-${provider.id}`}
                     label={provider.label}
                     checked={state.enabledProviders.includes(provider.id)}
-                    onChange={() => handleProviderToggle(provider.id)}
+                    onChange={() => { handleProviderToggle(provider.id); }}
                   />
                 ))}
               </div>
@@ -93,7 +93,7 @@ export function Page3Toggles() {
               icon={channel.icon}
               label={channel.label}
               checked={state.enabledChannels.includes(channel.id)}
-              onChange={() => handleChannelToggle(channel.id)}
+              onChange={() => { handleChannelToggle(channel.id); }}
             />
           ))}
         </div>
@@ -102,7 +102,7 @@ export function Page3Toggles() {
             <button
               type="button"
               className="page3-show-more"
-              onClick={() => setShowAllChannels(!showAllChannels)}
+              onClick={() => { setShowAllChannels(!showAllChannels); }}
             >
               {showAllChannels ? 'Show less' : `Show all (${OTHER_CHANNELS.length} more)`}
             </button>
@@ -115,7 +115,7 @@ export function Page3Toggles() {
                     icon={channel.icon}
                     label={channel.label}
                     checked={state.enabledChannels.includes(channel.id)}
-                    onChange={() => handleChannelToggle(channel.id)}
+                    onChange={() => { handleChannelToggle(channel.id); }}
                   />
                 ))}
               </div>
@@ -132,21 +132,21 @@ export function Page3Toggles() {
             label="Commands enabled"
             hint="Allow /commands in chat"
             checked={state.features.commands}
-            onChange={(checked) => handleFeatureChange('commands', checked)}
+            onChange={(checked) => { handleFeatureChange('commands', checked); }}
           />
           <FeatureCheckbox
             id="feature-tts"
             label="Text-to-Speech"
             hint="Voice responses (requires provider support)"
             checked={state.features.tts}
-            onChange={(checked) => handleFeatureChange('tts', checked)}
+            onChange={(checked) => { handleFeatureChange('tts', checked); }}
           />
           <FeatureCheckbox
             id="feature-sandbox"
             label="Sandbox mode"
             hint="Isolated environment for testing"
             checked={state.features.sandbox}
-            onChange={(checked) => handleFeatureChange('sandbox', checked)}
+            onChange={(checked) => { handleFeatureChange('sandbox', checked); }}
           />
         </div>
 
@@ -160,7 +160,7 @@ export function Page3Toggles() {
                   name="sessionScope"
                   value={scope}
                   checked={state.features.sessionScope === scope}
-                  onChange={() => handleSessionScopeChange(scope)}
+                  onChange={() => { handleSessionScopeChange(scope); }}
                 />
                 <span className="page3-radio-box" />
                 <span className="page3-radio-text">{scope}</span>
