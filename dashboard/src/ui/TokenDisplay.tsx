@@ -7,28 +7,49 @@ interface TokenDisplayProps {
 }
 
 /**
- * Copy text to clipboard using the modern Clipboard API.
- * Requires secure context (HTTPS or localhost).
+ * Copy text to clipboard using the modern Clipboard API with fallback.
+ * Requires secure context (HTTPS or localhost) for Clipboard API.
  */
 async function copyToClipboard(text: string): Promise<boolean> {
-  // Try modern Clipboard API
+  // Try modern Clipboard API first
   try {
     await navigator.clipboard.writeText(text);
     return true;
-  } catch {
+  } catch (err) {
+    console.warn('Clipboard API failed, trying fallback:', err);
+  }
+
+  // Fallback: hidden textarea + execCommand
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const success = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return success;
+  } catch (err) {
+    console.warn('Fallback copy failed:', err);
     return false;
   }
 }
 
 export function TokenDisplay({ token, label = 'Access Token' }: TokenDisplayProps) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
   const handleCopy = useCallback(() => {
+    setCopyFailed(false);
     void copyToClipboard(token).then((success) => {
       if (success) {
         setCopied(true);
         setTimeout(() => { setCopied(false); }, 2000);
+      } else {
+        setCopyFailed(true);
+        setTimeout(() => { setCopyFailed(false); }, 2000);
       }
     });
   }, [token]);
@@ -52,12 +73,12 @@ export function TokenDisplay({ token, label = 'Access Token' }: TokenDisplayProp
           {revealed ? token : maskedToken}
         </code>
         <button
-          className={`token-display-copy ${copied ? 'copied' : ''}`}
+          className={`token-display-copy ${copied ? 'copied' : ''} ${copyFailed ? 'failed' : ''}`}
           onClick={handleCopy}
           title="Copy to clipboard"
         >
           <span className="token-display-copy-icon">
-            {copied ? '✓' : '⧉'}
+            {copied ? '✓' : copyFailed ? '✗' : '⧉'}
           </span>
         </button>
       </div>

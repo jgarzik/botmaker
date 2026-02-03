@@ -98,3 +98,7 @@
 .token-display-copy.copied {
   animation: token-copied-pulse 0.4s ease-out;
 }
+
+.token-display-copy.failed {
+  color: var(--color-danger);
+}
