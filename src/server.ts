@@ -54,6 +54,10 @@ interface Session {
   expiresAt: number;
 }
 
+// Session storage: intentionally in-memory for simplicity.
+// Sessions are lost on server restart; users must re-login.
+// Expired sessions are cleaned up lazily in validateSession().
+// Acceptable for single-user admin dashboard with infrequent restarts.
 const sessions = new Map<string, Session>();
 
 function createSession(expiryMs: number): string {
@@ -178,8 +182,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   const report = await reconciliation.reconcileOnStartup();
   server.log.info({ report }, 'Startup reconciliation complete');
 
-  // Health check
-  server.get('/health', () => {
+  // Health check (rate limiting disabled for monitoring/load balancers)
+  server.get('/health', { config: { rateLimit: false } }, () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 

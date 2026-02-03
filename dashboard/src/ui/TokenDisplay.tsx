@@ -7,8 +7,8 @@ interface TokenDisplayProps {
 }
 
 /**
- * Copy text to clipboard with fallback for non-HTTPS contexts.
- * The Clipboard API requires secure context (HTTPS or localhost).
+ * Copy text to clipboard using the modern Clipboard API.
+ * Requires secure context (HTTPS or localhost).
  */
 async function copyToClipboard(text: string): Promise<boolean> {
   // Try modern Clipboard API
