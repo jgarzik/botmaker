@@ -87,7 +87,7 @@ describe('WizardContext', () => {
         });
       });
 
-      expect(result.current.state.providerConfigs.openai.model).toBe('gpt-4');
+      expect(result.current.state.providerConfigs.openai?.model).toBe('gpt-4');
     });
 
     it('sets feature values', () => {

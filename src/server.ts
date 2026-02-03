@@ -3,7 +3,7 @@ import fastifyStatic from '@fastify/static';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyHelmet from '@fastify/helmet';
 import { join, resolve } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 import { getConfig } from './config.js';
@@ -115,9 +115,12 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Authentication middleware for API routes
-  const adminToken = process.env.ADMIN_TOKEN;
+  let adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken && process.env.ADMIN_TOKEN_FILE) {
+    adminToken = readFileSync(process.env.ADMIN_TOKEN_FILE, 'utf-8').trim();
+  }
   if (!adminToken) {
-    throw new Error('ADMIN_TOKEN environment variable is required');
+    throw new Error('ADMIN_TOKEN or ADMIN_TOKEN_FILE environment variable is required');
   }
 
   server.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {

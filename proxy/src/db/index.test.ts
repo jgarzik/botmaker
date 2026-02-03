@@ -288,7 +288,7 @@ describe('ProxyDatabase', () => {
 
       // Log usage - this should not throw
       expect(() => {
-        db.logUsage(botId, 'openai', 'key-123', 200);
+        db?.logUsage(botId, 'openai', 'key-123', 200);
       }).not.toThrow();
     });
 
@@ -298,7 +298,7 @@ describe('ProxyDatabase', () => {
       db.addBot(botId, 'test-bot', 'hash123');
 
       expect(() => {
-        db.logUsage(botId, 'openai', null, null);
+        db?.logUsage(botId, 'openai', null, null);
       }).not.toThrow();
     });
   });
