@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import type { ProxyKey } from '../types';
-
-const VENDOR_NAMES: Record<string, string> = {
-  openai: 'OpenAI',
-  anthropic: 'Anthropic',
-  venice: 'Venice',
-  google: 'Google',
-};
+import { getProvider } from '../config/providers';
 
 interface DeleteKeyModalProps {
   isOpen: boolean;
@@ -31,7 +25,7 @@ export function DeleteKeyModal({ isOpen, onClose, onConfirm, keyToDelete }: Dele
 
   if (!keyToDelete) return null;
 
-  const vendorName = VENDOR_NAMES[keyToDelete.vendor] ?? keyToDelete.vendor;
+  const vendorName = getProvider(keyToDelete.vendor)?.label ?? keyToDelete.vendor;
   const keyLabel = keyToDelete.label ?? 'Unnamed Key';
 
   return (

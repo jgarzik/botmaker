@@ -27,6 +27,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
     textarea.style.opacity = '0';
     document.body.appendChild(textarea);
     textarea.select();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Intentional fallback for older browsers
     const success = document.execCommand('copy');
     document.body.removeChild(textarea);
     return success;

@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import type { AddKeyInput } from '../types';
+import { PROVIDERS } from '../config/providers';
 import './AddKeyForm.css';
-
-const VENDORS = [
-  { id: 'openai', name: 'OpenAI' },
-  { id: 'anthropic', name: 'Anthropic' },
-  { id: 'venice', name: 'Venice' },
-  { id: 'google', name: 'Google' },
-];
 
 interface AddKeyFormProps {
   onSubmit: (input: AddKeyInput) => Promise<void>;
@@ -64,9 +58,9 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
           onChange={(e) => { setVendor(e.target.value); }}
           disabled={loading}
         >
-          {VENDORS.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name}
+          {PROVIDERS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
             </option>
           ))}
         </select>
