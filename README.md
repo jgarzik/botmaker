@@ -78,24 +78,18 @@ mkdir -p secrets
 openssl rand -hex 32 > secrets/master_key
 openssl rand -hex 32 > secrets/admin_token
 cp secrets/admin_token secrets/proxy_admin_token
+openssl rand -base64 16 > secrets/admin_password
 
 # 2. Build images (first time, or after code changes)
 docker compose build botenv
 docker compose build
 
 # 3. Run services
-ADMIN_PASSWORD=your-secure-password-here docker compose up -d
+docker compose up -d
 
-# 4. Open dashboard
+# 4. Open dashboard (password is in secrets/admin_password)
 open http://localhost:7100   # or visit in browser
-```
-
-**Note:** `ADMIN_PASSWORD` must be at least 12 characters.
-
-**Tip:** Create a `.env` file to avoid typing the password each time:
-```bash
-echo "ADMIN_PASSWORD=your-secure-password-here" > .env
-# Now you can just run: docker compose up -d
+cat secrets/admin_password   # to see your generated password
 ```
 
 Other useful commands:
@@ -132,19 +126,21 @@ ADMIN_PASSWORD=your-secure-password npm start
 
 ## Authentication
 
-The dashboard requires password authentication. Set the `ADMIN_PASSWORD` environment variable:
+The dashboard requires password authentication. The password is read from `secrets/admin_password`.
 
+**Setup (done in Quick Start):**
 ```bash
-# Docker Compose
-ADMIN_PASSWORD=your-secure-password docker compose up -d
-
-# Development
-ADMIN_PASSWORD=your-secure-password npm run dev
+openssl rand -base64 16 > secrets/admin_password
 ```
 
 **Requirements:**
 - Password must be at least 12 characters
-- Cannot be empty or omitted
+- File must exist and be readable
+
+**Alternative (development only):**
+```bash
+ADMIN_PASSWORD=your-password npm run dev
+```
 
 On first visit, you'll see a login form. Enter the password to access the dashboard. Sessions are stored in-memory and expire after 24 hours.
 
@@ -179,8 +175,8 @@ curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:7100/api/logout
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ADMIN_PASSWORD` | *(required)* | Dashboard login password |
-| `ADMIN_PASSWORD_FILE` | - | Alternative: read password from file |
+| `ADMIN_PASSWORD_FILE` | /secrets/admin_password | Dashboard password file (recommended) |
+| `ADMIN_PASSWORD` | - | Dashboard password (env var, dev only) |
 | `PORT` | 7100 | Server port |
 | `HOST` | 0.0.0.0 | Bind address |
 | `DATA_DIR` | ./data | Database and bot workspaces |
