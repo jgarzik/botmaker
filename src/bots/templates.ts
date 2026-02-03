@@ -7,6 +7,22 @@
 import { mkdirSync, writeFileSync, chmodSync, chownSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
+/**
+ * Try to change file ownership, but gracefully skip if not permitted.
+ * chown requires root privileges; in CI/dev environments we may not have them.
+ */
+function tryChown(path: string, uid: number, gid: number): void {
+  try {
+    chownSync(path, uid, gid);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'EPERM') {
+      // Not running as root - skip chown (acceptable in dev/CI)
+      return;
+    }
+    throw err;
+  }
+}
+
 export interface BotPersona {
   name: string;
   identity: string;
@@ -256,20 +272,20 @@ export function createBotWorkspace(dataDir: string, config: BotWorkspaceConfig):
   const agentDir = join(botDir, 'agents', 'main', 'agent');
   mkdirSync(agentDir, { recursive: true, mode: 0o777 });
   chmodSync(agentDir, 0o777);
-  chownSync(agentDir, OPENCLAW_UID, OPENCLAW_GID);
+  tryChown(agentDir, OPENCLAW_UID, OPENCLAW_GID);
 
   // Pre-create sessions directory for OpenClaw runtime use
   const sessionsDir = join(botDir, 'agents', 'main', 'sessions');
   mkdirSync(sessionsDir, { recursive: true, mode: 0o777 });
   chmodSync(sessionsDir, 0o777);
-  chownSync(sessionsDir, OPENCLAW_UID, OPENCLAW_GID);
+  tryChown(sessionsDir, OPENCLAW_UID, OPENCLAW_GID);
 
   // Pre-create sandbox directory for OpenClaw code execution
   // OpenClaw hardcodes /app/workspace for sandbox operations
   const sandboxDir = join(botDir, 'sandbox');
   mkdirSync(sandboxDir, { recursive: true, mode: 0o777 });
   chmodSync(sandboxDir, 0o777);
-  chownSync(sandboxDir, OPENCLAW_UID, OPENCLAW_GID);
+  tryChown(sandboxDir, OPENCLAW_UID, OPENCLAW_GID);
 }
 
 /**
