@@ -103,10 +103,45 @@ npm run build:all
 npm start
 ```
 
+## Authentication
+
+The dashboard requires password authentication. Set the `ADMIN_PASSWORD` environment variable:
+
+```bash
+# Docker Compose
+ADMIN_PASSWORD=your-secure-password docker compose up -d
+
+# Development
+ADMIN_PASSWORD=your-secure-password npm run dev
+```
+
+**Requirements:**
+- Password must be at least 12 characters
+- Cannot be empty or omitted
+
+On first visit, you'll see a login form. Enter the password to access the dashboard. Sessions are stored in-memory and expire after 24 hours.
+
+### Login API
+
+```bash
+# Login
+TOKEN=$(curl -s -X POST http://localhost:7100/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"password":"your-password"}' | jq -r .token)
+
+# Use token for API calls
+curl -H "Authorization: Bearer $TOKEN" http://localhost:7100/api/bots
+
+# Logout
+curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:7100/api/logout
+```
+
 ## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `ADMIN_PASSWORD` | *(required)* | Dashboard login password |
+| `ADMIN_PASSWORD_FILE` | - | Alternative: read password from file |
 | `PORT` | 7100 | Server port |
 | `HOST` | 0.0.0.0 | Bind address |
 | `DATA_DIR` | ./data | Database and bot workspaces |
@@ -114,8 +149,18 @@ npm start
 | `BOTENV_IMAGE` | botmaker-env:latest | Bot container image (built from botenv) |
 | `OPENCLAW_BASE_IMAGE` | openclaw:latest | Base image for botenv |
 | `BOT_PORT_START` | 19000 | Starting port for bot containers |
+| `SESSION_EXPIRY_MS` | 86400000 | Session expiry in milliseconds (default 24h) |
 
 ## API Reference
+
+All `/api/*` endpoints require authentication via Bearer token (see Authentication section).
+
+### Authentication
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/login` | Login with password, returns session token |
+| POST | `/api/logout` | Invalidate current session |
 
 ### Bot Management
 
@@ -132,7 +177,7 @@ npm start
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/health` | Health check |
+| GET | `/health` | Health check (no auth required) |
 | GET | `/api/stats` | Container resource stats (CPU, memory) |
 | GET | `/api/admin/orphans` | Preview orphaned resources |
 | POST | `/api/admin/cleanup` | Clean orphaned containers/workspaces/secrets |

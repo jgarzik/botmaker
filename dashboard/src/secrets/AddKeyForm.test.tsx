@@ -32,7 +32,7 @@ describe('AddKeyForm', () => {
   it('should default vendor to openai', () => {
     render(<AddKeyForm {...defaultProps} />);
 
-    const select = screen.getByLabelText('Provider') as HTMLSelectElement;
+    const select = screen.getByLabelText<HTMLSelectElement>('Provider');
     expect(select.value).toBe('openai');
   });
 
@@ -114,9 +114,9 @@ describe('AddKeyForm', () => {
       expect(handleSubmit).toHaveBeenCalled();
     });
 
-    const secretInput = screen.getByLabelText('API Key *') as HTMLInputElement;
-    const labelInput = screen.getByLabelText('Label') as HTMLInputElement;
-    const tagInput = screen.getByLabelText('Tag') as HTMLInputElement;
+    const secretInput = screen.getByLabelText<HTMLInputElement>('API Key *');
+    const labelInput = screen.getByLabelText<HTMLInputElement>('Label');
+    const tagInput = screen.getByLabelText<HTMLInputElement>('Tag');
 
     expect(secretInput.value).toBe('');
     expect(labelInput.value).toBe('');

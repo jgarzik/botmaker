@@ -33,6 +33,10 @@ export interface AppConfig {
   proxyAdminUrl: string | null;
   /** Keyring proxy admin token (optional) */
   proxyAdminToken: string | null;
+  /** Admin password for dashboard login */
+  adminPassword: string;
+  /** Session token expiry in milliseconds (default 24 hours) */
+  sessionExpiryMs: number;
 }
 
 function getEnvOrDefault(key: string, defaultValue: string): string {
@@ -66,6 +70,11 @@ export function getConfig(): AppConfig {
     ?? process.env.PROXY_ADMIN_TOKEN
     ?? null;
 
+  // Admin password can come from file or env var
+  const adminPassword = readSecretFile(process.env.ADMIN_PASSWORD_FILE)
+    ?? process.env.ADMIN_PASSWORD
+    ?? '';
+
   return {
     port: getEnvIntOrDefault('PORT', 7100),
     host: getEnvOrDefault('HOST', '0.0.0.0'),
@@ -78,6 +87,8 @@ export function getConfig(): AppConfig {
     botPortStart: getEnvIntOrDefault('BOT_PORT_START', 19000),
     proxyAdminUrl: process.env.PROXY_ADMIN_URL ?? null,
     proxyAdminToken,
+    adminPassword,
+    sessionExpiryMs: getEnvIntOrDefault('SESSION_EXPIRY_MS', 24 * 60 * 60 * 1000),
   };
 }
 

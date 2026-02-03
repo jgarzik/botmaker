@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
 import { useBots } from './hooks/useBots';
 import { Shell, Header, TabNav, type TabId } from './layout';
 import { DashboardTab } from './dashboard';
 import { DiagnosticsTab } from './diagnostics';
 import { SecretsTab } from './secrets';
 import { CreateWizard } from './wizard';
+import LoginForm from './components/LoginForm';
 
 export default function App() {
+  const { isAuthenticated, isLoading: authLoading, login, logout, error: authError } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showWizard, setShowWizard] = useState(false);
 
@@ -21,11 +24,16 @@ export default function App() {
     handleDelete,
   } = useBots();
 
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={login} error={authError} isLoading={authLoading} />;
+  }
+
   return (
     <Shell
       header={
         <>
-          <Header onCreateClick={() => { setShowWizard(true); }} />
+          <Header onCreateClick={() => { setShowWizard(true); }} onLogout={() => { void logout(); }} />
           <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
         </>
       }

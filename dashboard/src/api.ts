@@ -117,6 +117,29 @@ export async function checkHealth(): Promise<{ status: string; timestamp: string
   return handleResponse<{ status: string; timestamp: string }>(response);
 }
 
+export async function login(password: string): Promise<string> {
+  const response = await fetch(`${API_BASE}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  const data = await handleResponse<{ token: string }>(response);
+  setAdminToken(data.token);
+  return data.token;
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/logout`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    // Ignore errors during logout
+  }
+  clearAdminToken();
+}
+
 export async function fetchProxyKeys(): Promise<ProxyKey[]> {
   const response = await fetch(`${API_BASE}/proxy/keys`, {
     headers: getAuthHeaders(),

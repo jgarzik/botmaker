@@ -16,6 +16,9 @@ import {
   fetchProxyHealth,
   setAdminToken,
   clearAdminToken,
+  getAdminToken,
+  login,
+  logout,
 } from './api';
 
 // Mock fetch
@@ -322,6 +325,70 @@ describe('API Client', () => {
 
       expect(result).toEqual(health);
       expect(mockFetch).toHaveBeenCalledWith('/api/proxy/health', { headers: AUTH_HEADER });
+    });
+  });
+
+  describe('login', () => {
+    it('should login and store token', async () => {
+      const token = 'session-token-123';
+      clearAdminToken();
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ token }),
+      });
+
+      const result = await login('test-password');
+
+      expect(result).toBe(token);
+      expect(getAdminToken()).toBe(token);
+      expect(mockFetch).toHaveBeenCalledWith('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: 'test-password' }),
+      });
+    });
+
+    it('should throw on login failure', async () => {
+      clearAdminToken();
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({ error: 'Invalid password' }),
+      });
+
+      await expect(login('wrong-password')).rejects.toThrow();
+      expect(getAdminToken()).toBeNull();
+    });
+  });
+
+  describe('logout', () => {
+    it('should logout and clear token', async () => {
+      setAdminToken('session-token-123');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      });
+
+      await logout();
+
+      expect(getAdminToken()).toBeNull();
+      expect(mockFetch).toHaveBeenCalledWith('/api/logout', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer session-token-123' },
+      });
+    });
+
+    it('should clear token even if server call fails', async () => {
+      setAdminToken('session-token-123');
+
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      await logout();
+
+      expect(getAdminToken()).toBeNull();
     });
   });
 });

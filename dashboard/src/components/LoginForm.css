@@ -1,0 +1,191 @@
+/* Login Form - Industrial control panel login */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: var(--bg-primary);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-secondary);
+  border: var(--panel-border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.login-header {
+  padding: var(--space-xl) var(--space-xl) var(--space-lg);
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-panel);
+}
+
+.login-logo {
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+}
+
+.login-logo-eye {
+  animation: led-pulse 3s ease-in-out infinite;
+  --glow-color: var(--accent-primary-glow);
+}
+
+.login-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-success) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--space-sm);
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.login-form {
+  padding: var(--space-xl);
+}
+
+.login-field {
+  margin-bottom: var(--space-lg);
+}
+
+.login-label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.login-input {
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+}
+
+.login-input::placeholder {
+  color: var(--text-muted);
+}
+
+.login-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+  background: rgba(255, 82, 82, 0.1);
+  border: 1px solid var(--accent-error);
+  border-radius: var(--radius-sm);
+  color: var(--accent-error);
+  font-size: 13px;
+}
+
+.login-error svg {
+  flex-shrink: 0;
+}
+
+.login-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 212, 255, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.login-button:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 212, 255, 0.3);
+}
+
+.login-button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-container {
+    padding: var(--space-md);
+  }
+
+  .login-header {
+    padding: var(--space-lg);
+  }
+
+  .login-form {
+    padding: var(--space-lg);
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+}

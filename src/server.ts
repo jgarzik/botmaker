@@ -3,7 +3,7 @@ import fastifyStatic from '@fastify/static';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyHelmet from '@fastify/helmet';
 import { join, resolve } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 import { getConfig } from './config.js';
@@ -47,6 +47,38 @@ function safeCompare(a: string, b: string): boolean {
   const equal = timingSafeEqual(aPadded, bPadded);
   return equal && aBuf.length === bBuf.length;
 }
+
+// Session management
+interface Session {
+  token: string;
+  expiresAt: number;
+}
+
+const sessions = new Map<string, Session>();
+
+function createSession(expiryMs: number): string {
+  const token = randomBytes(32).toString('hex');
+  const expiresAt = Date.now() + expiryMs;
+  sessions.set(token, { token, expiresAt });
+  return token;
+}
+
+function validateSession(token: string): boolean {
+  const session = sessions.get(token);
+  if (!session) return false;
+  if (Date.now() > session.expiresAt) {
+    sessions.delete(token);
+    return false;
+  }
+  return true;
+}
+
+function invalidateSession(token: string): void {
+  sessions.delete(token);
+}
+
+// Export for testing
+export { sessions, createSession, validateSession, invalidateSession };
 
 type SessionScope = 'user' | 'channel' | 'global';
 
@@ -115,16 +147,20 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Authentication middleware for API routes
-  let adminToken = process.env.ADMIN_TOKEN;
-  if (!adminToken && process.env.ADMIN_TOKEN_FILE) {
-    adminToken = readFileSync(process.env.ADMIN_TOKEN_FILE, 'utf-8').trim();
+  if (!config.adminPassword) {
+    throw new Error('ADMIN_PASSWORD or ADMIN_PASSWORD_FILE environment variable is required');
   }
-  if (!adminToken) {
-    throw new Error('ADMIN_TOKEN or ADMIN_TOKEN_FILE environment variable is required');
+
+  if (config.adminPassword.length < 12) {
+    throw new Error('ADMIN_PASSWORD must be at least 12 characters');
   }
 
   server.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
     if (request.url === '/health') {
+      return;
+    }
+    // Allow login endpoint without auth
+    if (request.url === '/api/login' && request.method === 'POST') {
       return;
     }
     if (!request.url.startsWith('/api/')) {
@@ -138,8 +174,9 @@ export async function buildServer(): Promise<FastifyInstance> {
     }
 
     const token = auth.slice(7);
-    if (!safeCompare(token, adminToken)) {
-      reply.code(403).send({ error: 'Invalid admin token' });
+    // Validate session token
+    if (!validateSession(token)) {
+      reply.code(401).send({ error: 'Invalid or expired session' });
       return;
     }
   });
@@ -152,6 +189,34 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Health check
   server.get('/health', () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
+  });
+
+  // Login endpoint
+  server.post<{ Body: { password?: string } }>('/api/login', async (request, reply) => {
+    const { password } = request.body;
+
+    if (!password) {
+      reply.code(400);
+      return { error: 'Password is required' };
+    }
+
+    if (!safeCompare(password, config.adminPassword)) {
+      reply.code(401);
+      return { error: 'Invalid password' };
+    }
+
+    const token = createSession(config.sessionExpiryMs);
+    return { token };
+  });
+
+  // Logout endpoint
+  server.post('/api/logout', async (request, _reply) => {
+    const auth = request.headers.authorization;
+    if (auth?.startsWith('Bearer ')) {
+      const token = auth.slice(7);
+      invalidateSession(token);
+    }
+    return { success: true };
   });
 
   // List all bots

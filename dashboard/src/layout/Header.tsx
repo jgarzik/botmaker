@@ -3,9 +3,10 @@ import './Header.css';
 
 interface HeaderProps {
   onCreateClick?: () => void;
+  onLogout?: () => void;
 }
 
-export function Header({ onCreateClick }: HeaderProps) {
+export function Header({ onCreateClick, onLogout }: HeaderProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const cycleTheme = () => {
@@ -59,6 +60,15 @@ export function Header({ onCreateClick }: HeaderProps) {
                 <path d="M7 1v12M1 7h12" />
               </svg>
               <span>New Bot</span>
+            </button>
+          )}
+
+          {onLogout && (
+            <button className="header-logout-btn" onClick={onLogout} aria-label="Log out">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6" />
+              </svg>
+              <span>Logout</span>
             </button>
           )}
         </div>

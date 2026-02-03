@@ -32,7 +32,8 @@ services:
       # Proxy configuration (optional - comment out to disable)
       - PROXY_ADMIN_URL=http://keyring-proxy:9100
       - PROXY_ADMIN_TOKEN_FILE=/secrets/proxy_admin_token
-      - ADMIN_TOKEN_FILE=/secrets/admin_token
+      # Dashboard login password (required, minimum 12 characters)
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
     depends_on:
       - keyring-proxy
     networks:
