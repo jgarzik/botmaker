@@ -55,6 +55,13 @@ export class DockerService {
           [LABEL_BOT_ID]: botId,
           [LABEL_BOT_HOSTNAME]: hostname
         },
+        Healthcheck: {
+          Test: ['CMD', 'curl', '-sf', `http://localhost:${config.port}/`],
+          Interval: 2_000_000_000,  // 2s in nanoseconds
+          Timeout: 3_000_000_000,   // 3s in nanoseconds
+          Retries: 30,
+          StartPeriod: 5_000_000_000,  // 5s in nanoseconds
+        },
         HostConfig: {
           Binds: [
             `${config.hostSecretsPath}:/run/secrets:ro`,
@@ -182,13 +189,21 @@ export class DockerService {
       const container = this.docker.getContainer(containerName);
       const info = await container.inspect();
 
+      // Extract health status from Docker's Health field
+      const healthState = info.State.Health?.Status;
+      let health: ContainerStatus['health'] = 'none';
+      if (healthState === 'starting') health = 'starting';
+      else if (healthState === 'healthy') health = 'healthy';
+      else if (healthState === 'unhealthy') health = 'unhealthy';
+
       return {
         id: info.Id,
         state: info.State.Status as ContainerStatus['state'],
         running: info.State.Running,
         exitCode: info.State.ExitCode,
         startedAt: info.State.StartedAt,
-        finishedAt: info.State.FinishedAt
+        finishedAt: info.State.FinishedAt,
+        health
       };
     } catch (err) {
       const dockerErr = err as { statusCode?: number };

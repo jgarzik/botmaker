@@ -1,5 +1,7 @@
 export type BotStatus = 'created' | 'starting' | 'running' | 'stopped' | 'error';
 
+export type HealthStatus = 'none' | 'starting' | 'healthy' | 'unhealthy';
+
 export interface ContainerStatus {
   id: string;
   state: string;
@@ -7,6 +9,7 @@ export interface ContainerStatus {
   exitCode: number;
   startedAt: string;
   finishedAt: string;
+  health: HealthStatus;
 }
 
 export interface Bot {

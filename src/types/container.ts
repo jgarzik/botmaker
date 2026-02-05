@@ -14,6 +14,9 @@ export type ContainerState =
   | 'removing'
   | 'dead';
 
+/** Docker health check status */
+export type HealthStatus = 'none' | 'starting' | 'healthy' | 'unhealthy';
+
 /** Container status from Docker inspect */
 export interface ContainerStatus {
   id: string;
@@ -22,6 +25,7 @@ export interface ContainerStatus {
   exitCode: number;
   startedAt: string;
   finishedAt: string;
+  health: HealthStatus;
 }
 
 /** Container info from Docker list (human-readable) */

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import type { Bot, BotStatus } from '../types';
+import type { Bot } from '../types';
 import { StatusLight } from '../ui/StatusLight';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Panel } from '../ui/Panel';
 import { TokenDisplay } from '../ui/TokenDisplay';
 import { BotLink } from '../ui/BotLink';
+import { getEffectiveStatus } from '../utils/bot-status';
 import './BotCard.css';
 
 interface BotCardProps {
@@ -14,23 +15,6 @@ interface BotCardProps {
   onStop: (hostname: string) => void;
   onDelete: (hostname: string) => void;
   loading: boolean;
-}
-
-function getEffectiveStatus(bot: Bot): BotStatus {
-  const containerState = bot.container_status?.state;
-  if (containerState === 'running') {
-    // Check if recently started (within 8 seconds)
-    const startedAt = bot.container_status?.startedAt;
-    if (startedAt) {
-      const elapsed = Date.now() - new Date(startedAt).getTime();
-      if (elapsed < 8000) return 'starting';
-    }
-    return 'running';
-  }
-  if (containerState === 'exited' || containerState === 'dead') {
-    return bot.container_status?.exitCode === 0 ? 'stopped' : 'error';
-  }
-  return bot.status;
 }
 
 function formatDate(dateString: string): string {
