@@ -40,7 +40,7 @@ export const VENDOR_CONFIGS: Record<string, VendorConfig> = {
   },
   anthropic: {
     host: 'api.anthropic.com',
-    basePath: '/v1',
+    basePath: '', // OpenClaw's anthropic-messages API includes /v1 in its path
     authHeader: 'x-api-key',
     authFormat: (key) => key,
   },
@@ -55,5 +55,11 @@ export const VENDOR_CONFIGS: Record<string, VendorConfig> = {
     basePath: '/v1beta',
     authHeader: 'x-goog-api-key',
     authFormat: (key) => key,
+  },
+  openrouter: {
+    host: 'openrouter.ai',
+    basePath: '/api/v1',
+    authHeader: 'Authorization',
+    authFormat: (key) => `Bearer ${key}`,
   },
 };

@@ -3,10 +3,11 @@ import { openai } from './openai';
 import { anthropic } from './anthropic';
 import { google } from './google';
 import { venice } from './venice';
+import { openrouter } from './openrouter';
 
 export type { ProviderConfig, ModelInfo };
 
-export const PROVIDERS: ProviderConfig[] = [openai, anthropic, google, venice];
+export const PROVIDERS: ProviderConfig[] = [openai, anthropic, google, venice, openrouter];
 
 export const AI_PROVIDERS = PROVIDERS.map((p) => ({
   value: p.id,
@@ -28,4 +29,8 @@ export function getModels(providerId: string): ModelInfo[] {
 export function getDefaultModel(providerId: string): string {
   const provider = getProvider(providerId);
   return provider?.defaultModel ?? provider?.models[0]?.id ?? '';
+}
+
+export function getKeyHint(providerId: string): string {
+  return getProvider(providerId)?.keyHint ?? 'API key';
 }

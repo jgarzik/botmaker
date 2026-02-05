@@ -4,6 +4,7 @@ export const anthropic: ProviderConfig = {
   id: 'anthropic',
   label: 'Anthropic',
   baseUrl: 'https://api.anthropic.com/v1',
+  keyHint: 'sk-ant-...',
   defaultModel: 'claude-opus-4-5',
   models: [
     { id: 'claude-opus-4-5', label: 'Claude Opus 4.5' },

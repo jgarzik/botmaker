@@ -151,6 +151,52 @@ describe('templates', () => {
       expect(model.primary).toBe('anthropic/claude-3-opus');
     });
 
+    it('should use anthropic-messages API type for anthropic with proxy', () => {
+      const config = createTestConfig({
+        aiProvider: 'anthropic',
+        model: 'claude-3-opus',
+        proxy: {
+          baseUrl: 'http://proxy:9101/v1/anthropic',
+          token: 'proxy-token-123',
+        },
+      });
+      createBotWorkspace(testDir, config);
+
+      const openclawPath = join(testDir, 'bots', config.botHostname, 'openclaw.json');
+      const openclawConfig = JSON.parse(readFileSync(openclawPath, 'utf-8')) as Record<string, unknown>;
+
+      expect(openclawConfig.models).toEqual({
+        providers: {
+          'anthropic-proxy': {
+            baseUrl: 'http://proxy:9101/v1/anthropic',
+            apiKey: 'proxy-token-123',
+            api: 'anthropic-messages',
+            models: [{ id: 'claude-3-opus', name: 'claude-3-opus' }],
+          },
+        },
+      });
+    });
+
+    it('should use openai-completions API type for venice with proxy', () => {
+      const config = createTestConfig({
+        aiProvider: 'venice',
+        model: 'llama-3.3-70b',
+        proxy: {
+          baseUrl: 'http://proxy:9101/v1/venice',
+          token: 'proxy-token-123',
+        },
+      });
+      createBotWorkspace(testDir, config);
+
+      const openclawPath = join(testDir, 'bots', config.botHostname, 'openclaw.json');
+      const openclawConfig = JSON.parse(readFileSync(openclawPath, 'utf-8')) as Record<string, unknown>;
+      const models = openclawConfig.models as Record<string, unknown>;
+      const providers = models.providers as Record<string, unknown>;
+      const veniceProxy = providers['venice-proxy'] as Record<string, unknown>;
+
+      expect(veniceProxy.api).toBe('openai-completions');
+    });
+
     it('should include persona in workspace files', () => {
       const config = createTestConfig({
         persona: {

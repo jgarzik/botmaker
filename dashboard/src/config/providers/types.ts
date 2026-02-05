@@ -10,4 +10,5 @@ export interface ProviderConfig {
   baseUrl: string;
   models: ModelInfo[];
   defaultModel: string;
+  keyHint?: string; // Placeholder hint for API key format (e.g., "sk-ant-...")
 }
