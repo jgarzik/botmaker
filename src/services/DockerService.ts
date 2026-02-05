@@ -56,7 +56,7 @@ export class DockerService {
           [LABEL_BOT_HOSTNAME]: hostname
         },
         Healthcheck: {
-          Test: ['CMD', 'wget', '-q', '--spider', `http://localhost:${config.port}/health`],
+          Test: ['CMD', 'curl', '-sf', `http://localhost:${config.port}/`],
           Interval: 2_000_000_000,  // 2s in nanoseconds
           Timeout: 3_000_000_000,   // 3s in nanoseconds
           Retries: 30,

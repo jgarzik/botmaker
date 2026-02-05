@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { Bot, BotStatus } from '../types';
 import { StatusSection } from './StatusSection';
 import { EmptyState } from './EmptyState';
+import { getEffectiveStatus } from '../utils/bot-status';
 import './DashboardTab.css';
 
 interface DashboardTabProps {
@@ -13,23 +14,6 @@ interface DashboardTabProps {
   loading: boolean;
   actionLoading: boolean;
   error: string;
-}
-
-function getEffectiveStatus(bot: Bot): BotStatus {
-  const containerState = bot.container_status?.state;
-  if (containerState === 'running') {
-    // Check if recently started (within 8 seconds)
-    const startedAt = bot.container_status?.startedAt;
-    if (startedAt) {
-      const elapsed = Date.now() - new Date(startedAt).getTime();
-      if (elapsed < 8000) return 'starting';
-    }
-    return 'running';
-  }
-  if (containerState === 'exited' || containerState === 'dead') {
-    return bot.container_status?.exitCode === 0 ? 'stopped' : 'error';
-  }
-  return bot.status;
 }
 
 export function DashboardTab({
