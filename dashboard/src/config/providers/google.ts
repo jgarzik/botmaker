@@ -4,6 +4,7 @@ export const google: ProviderConfig = {
   id: 'google',
   label: 'Google',
   baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+  keyHint: 'AIza...',
   defaultModel: 'gemini-3-pro-preview',
   models: [
     { id: 'gemini-3-pro-preview', label: 'Gemini 3 Pro Preview' },

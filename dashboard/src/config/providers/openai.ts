@@ -4,6 +4,7 @@ export const openai: ProviderConfig = {
   id: 'openai',
   label: 'OpenAI',
   baseUrl: 'https://api.openai.com/v1',
+  keyHint: 'sk-...',
   defaultModel: 'gpt-5.2',
   models: [
     { id: 'gpt-5.2', label: 'GPT-5.2' },

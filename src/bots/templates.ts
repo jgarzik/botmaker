@@ -52,6 +52,25 @@ export interface BotWorkspaceConfig {
 }
 
 /**
+ * Map AI provider to OpenClaw API type.
+ * Each provider uses a different API format that OpenClaw must know about.
+ */
+function getApiTypeForProvider(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return 'anthropic-messages';
+    case 'google':
+      return 'google-gemini';
+    case 'venice':
+    case 'openrouter':
+      return 'openai-completions'; // OpenAI-compatible APIs
+    case 'openai':
+    default:
+      return 'openai-responses';
+  }
+}
+
+/**
  * Generate openclaw.json configuration.
  * Follows OpenClaw's expected config structure for gateway mode.
  * When proxy is configured, uses proxy baseUrl instead of direct API access.
@@ -72,7 +91,7 @@ function generateOpenclawConfig(config: BotWorkspaceConfig): object {
           [`${config.aiProvider}-proxy`]: {
             baseUrl: config.proxy.baseUrl,
             apiKey: config.proxy.token,
-            api: 'openai-responses', // Required for custom providers
+            api: getApiTypeForProvider(config.aiProvider),
             models: [{ id: config.model, name: config.model }],
           },
         },

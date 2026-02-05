@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AddKeyInput } from '../types';
-import { PROVIDERS } from '../config/providers';
+import { PROVIDERS, getKeyHint } from '../config/providers';
 import './AddKeyForm.css';
 
 interface AddKeyFormProps {
@@ -73,7 +73,7 @@ export function AddKeyForm({ onSubmit, onCancel, loading }: AddKeyFormProps) {
           type="password"
           value={secret}
           onChange={(e) => { setSecret(e.target.value); }}
-          placeholder="sk-..."
+          placeholder={getKeyHint(vendor)}
           disabled={loading}
           autoComplete="off"
         />
