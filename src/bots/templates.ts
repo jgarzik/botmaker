@@ -66,13 +66,19 @@ function generateOpenclawConfig(config: BotWorkspaceConfig): object {
 
   // Build models config - use proxy if configured
   // Custom provider name prevents OpenClaw from merging with built-in provider defaults
+  // Use vendor-native API format (e.g. 'anthropic-messages') so the proxy can forward
+  // requests without body translation
+  const apiFormat = config.aiProvider === 'anthropic' ? 'anthropic-messages'
+    : config.aiProvider === 'google' ? 'google-generative-ai'
+    : 'openai-responses';
+
   const modelsConfig = config.proxy
     ? {
         providers: {
           [`${config.aiProvider}-proxy`]: {
             baseUrl: config.proxy.baseUrl,
             apiKey: config.proxy.token,
-            api: 'openai-responses', // Required for custom providers
+            api: apiFormat,
             models: [{ id: config.model, name: config.model }],
           },
         },

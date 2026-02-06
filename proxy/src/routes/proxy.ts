@@ -23,13 +23,21 @@ export function registerProxyRoutes(
     const vendorConfig = VENDOR_CONFIGS[vendor];
 
     // Extract and validate bot token
+    // Support both Bearer token (OpenAI-style) and x-api-key (Anthropic-style)
     const auth = req.headers.authorization;
-    if (!auth?.startsWith('Bearer ')) {
+    const xApiKey = req.headers['x-api-key'] as string | undefined;
+    let botToken: string | undefined;
+
+    if (auth?.startsWith('Bearer ')) {
+      botToken = auth.slice(7);
+    } else if (xApiKey) {
+      botToken = xApiKey;
+    }
+
+    if (!botToken) {
       reply.status(401).send({ error: 'Missing authorization' });
       return;
     }
-
-    const botToken = auth.slice(7);
     const tokenHash = hashToken(botToken);
 
     // Lookup bot

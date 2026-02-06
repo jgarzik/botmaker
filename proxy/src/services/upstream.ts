@@ -26,7 +26,16 @@ export async function forwardToUpstream(
     const { vendorConfig, path, method, headers, body, apiKey } = req;
 
     // Build upstream path
-    const upstreamPath = vendorConfig.basePath + path;
+    // Translate OpenAI-style /responses to Anthropic-style /messages
+    let translatedPath = path;
+    if (vendorConfig.host === 'api.anthropic.com' && path === '/responses') {
+      translatedPath = '/messages';
+    }
+    // Avoid doubling basePath when the client SDK already includes it
+    // (e.g. anthropic-messages API sends /v1/messages, basePath is /v1)
+    const upstreamPath = translatedPath.startsWith(vendorConfig.basePath)
+      ? translatedPath
+      : vendorConfig.basePath + translatedPath;
 
     // Clone and modify headers
     const upstreamHeaders: Record<string, string> = { ...headers };
@@ -42,6 +51,10 @@ export async function forwardToUpstream(
 
     // Set auth header with real API key
     upstreamHeaders[vendorConfig.authHeader.toLowerCase()] = vendorConfig.authFormat(apiKey);
+    // Add Anthropic-specific headers
+    if (vendorConfig.host === 'api.anthropic.com') {
+      upstreamHeaders['anthropic-version'] = '2023-06-01';
+    }
 
     // Set content-length if body present
     if (body) {
