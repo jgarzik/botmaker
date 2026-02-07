@@ -8,7 +8,7 @@ interface FlushableResponse extends ServerResponse {
   flush?: () => void;
 }
 
-const REQUEST_TIMEOUT_MS = 120000;
+const REQUEST_TIMEOUT_MS = 600000; // 10 min — must exceed slowest upstream (local LLMs can be slow)
 
 export interface UpstreamRequest {
   vendorConfig: VendorConfig;
