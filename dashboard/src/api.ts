@@ -178,3 +178,12 @@ export async function fetchProxyHealth(): Promise<ProxyHealthResponse> {
   });
   return handleResponse<ProxyHealthResponse>(response);
 }
+
+export async function fetchOllamaModels(baseUrl: string): Promise<string[]> {
+  const response = await fetch(
+    `${API_BASE}/ollama/models?baseUrl=${encodeURIComponent(baseUrl)}`,
+    { headers: getAuthHeaders() },
+  );
+  const data = await handleResponse<{ models: string[] }>(response);
+  return data.models;
+}

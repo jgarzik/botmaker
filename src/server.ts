@@ -604,6 +604,34 @@ export async function buildServer(): Promise<FastifyInstance> {
     }
   });
 
+  // Ollama/superproxy dynamic model listing
+  server.get<{ Querystring: { baseUrl?: string } }>('/api/ollama/models', async (request, reply) => {
+    const baseUrl = request.query.baseUrl;
+    if (!baseUrl) {
+      reply.code(400);
+      return { error: 'Missing baseUrl query parameter' };
+    }
+
+    try {
+      const url = new URL('/models', baseUrl);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => { controller.abort(); }, 5000);
+      const response = await fetch(url.toString(), { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        return { models: [] };
+      }
+
+      const data = await response.json() as { data?: { id: string }[] };
+      const models = (data.data ?? []).map((m: { id: string }) => m.id);
+      return { models };
+    } catch {
+      // Connection refused, timeout, etc. — graceful fallback
+      return { models: [] };
+    }
+  });
+
   // Serve static dashboard files (if built)
   const dashboardDist = join(process.cwd(), 'dashboard', 'dist');
   if (existsSync(dashboardDist)) {

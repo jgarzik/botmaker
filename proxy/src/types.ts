@@ -29,6 +29,8 @@ export interface VendorConfig {
   basePath: string;
   authHeader: string;
   authFormat: (key: string) => string;
+  port?: number;          // default: 443
+  protocol?: 'http' | 'https'; // default: 'https'
 }
 
 export const VENDOR_CONFIGS: Record<string, VendorConfig> = {
@@ -61,5 +63,13 @@ export const VENDOR_CONFIGS: Record<string, VendorConfig> = {
     basePath: '/api/v1',
     authHeader: 'Authorization',
     authFormat: (key) => `Bearer ${key}`,
+  },
+  ollama: {
+    host: 'host.docker.internal',
+    basePath: '/v1',
+    authHeader: 'Authorization',
+    authFormat: (key) => `Bearer ${key}`,
+    port: 4001,
+    protocol: 'http',
   },
 };

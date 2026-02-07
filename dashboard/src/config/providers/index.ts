@@ -4,10 +4,11 @@ import { anthropic } from './anthropic';
 import { google } from './google';
 import { venice } from './venice';
 import { openrouter } from './openrouter';
+import { ollama } from './ollama';
 
 export type { ProviderConfig, ModelInfo };
 
-export const PROVIDERS: ProviderConfig[] = [openai, anthropic, google, venice, openrouter];
+export const PROVIDERS: ProviderConfig[] = [openai, anthropic, google, venice, openrouter, ollama];
 
 export const AI_PROVIDERS = PROVIDERS.map((p) => ({
   value: p.id,

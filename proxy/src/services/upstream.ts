@@ -1,4 +1,5 @@
 import https from 'https';
+import http from 'http';
 import type { IncomingMessage, ServerResponse } from 'http';
 import type { FastifyReply } from 'fastify';
 import type { VendorConfig } from '../types.js';
@@ -48,16 +49,20 @@ export async function forwardToUpstream(
       upstreamHeaders['content-length'] = String(body.length);
     }
 
+    const protocol = vendorConfig.protocol ?? 'https';
+    const port = vendorConfig.port ?? (protocol === 'https' ? 443 : 80);
+
     const options = {
       hostname: vendorConfig.host,
-      port: 443,
+      port,
       path: upstreamPath,
       method,
       headers: upstreamHeaders,
       timeout: REQUEST_TIMEOUT_MS,
     };
 
-    const proxyReq = https.request(options, (proxyRes: IncomingMessage) => {
+    const transport = protocol === 'http' ? http : https;
+    const proxyReq = transport.request(options, (proxyRes: IncomingMessage) => {
       const statusCode = proxyRes.statusCode ?? 500;
 
       // Build headers to forward (excluding hop-by-hop)

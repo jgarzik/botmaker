@@ -63,6 +63,7 @@ function getApiTypeForProvider(provider: string): string {
       return 'google-gemini';
     case 'venice':
     case 'openrouter':
+    case 'ollama':
       return 'openai-completions'; // OpenAI-compatible APIs
     case 'openai':
     default:

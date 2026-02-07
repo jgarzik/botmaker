@@ -6,7 +6,7 @@ import { FeatureCheckbox } from '../components';
 import type { SessionScope } from '../../types';
 import './Page3Toggles.css';
 
-const POPULAR_PROVIDERS = ['openai', 'anthropic', 'venice'];
+const POPULAR_PROVIDERS = ['openai', 'anthropic', 'venice', 'ollama'];
 
 export function Page3Toggles() {
   const { state, dispatch } = useWizard();
