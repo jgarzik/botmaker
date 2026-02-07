@@ -32,7 +32,7 @@ export class ContainerError extends Error {
  * Wraps raw Docker errors with domain-specific error codes.
  *
  * Error code mapping:
- * - 404 -> NOT_FOUND (container doesn't exist)
+ * - 404 -> NOT_FOUND (resource doesn't exist — image or container)
  * - 409 -> ALREADY_EXISTS (container name conflict)
  * - 304 -> ignored (not modified, container already in desired state)
  * - ETIMEDOUT/timeout -> NETWORK_ERROR (Docker daemon unreachable)
@@ -41,11 +41,13 @@ export class ContainerError extends Error {
 export function wrapDockerError(err: unknown, botId: string): ContainerError {
   const dockerErr = err as { statusCode?: number; code?: string; message?: string };
 
-  // Container not found
+  // Docker resource not found (image or container)
   if (dockerErr.statusCode === 404) {
+    const rawMsg = dockerErr.message ?? '';
+    const detail = rawMsg ? `: ${rawMsg}` : '';
     return new ContainerError(
       'NOT_FOUND',
-      `Container for bot ${botId} not found`,
+      `Docker resource not found for bot ${botId}${detail}`,
       botId,
       err instanceof Error ? err : undefined
     );
