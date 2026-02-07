@@ -11,6 +11,8 @@ services:
   botmaker:
     build: .
     container_name: botmaker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "7100:7100"
     volumes:
