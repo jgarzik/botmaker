@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { VENDOR_CONFIGS, type VendorConfig } from './types.js';
+import { VENDOR_CONFIGS } from './types.js';
 
 describe('VENDOR_CONFIGS', () => {
   it('should include grok vendor', () => {
@@ -23,7 +23,7 @@ describe('VENDOR_CONFIGS', () => {
   });
 
   it('all static vendors have required fields', () => {
-    for (const [name, config] of Object.entries(VENDOR_CONFIGS) as [string, VendorConfig][]) {
+    for (const [name, config] of Object.entries(VENDOR_CONFIGS)) {
       expect(config.host, `${name}.host`).toBeTruthy();
       expect(config.basePath, `${name}.basePath`).toBeDefined();
       expect(config.authHeader, `${name}.authHeader`).toBeTruthy();
