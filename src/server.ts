@@ -5,6 +5,7 @@ import fastifyHelmet from '@fastify/helmet';
 import { join, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { promises as dns } from 'node:dns';
 
 import { getConfig } from './config.js';
 import { initDb } from './db/index.js';
@@ -114,33 +115,33 @@ function toDockerHostUrl(url: string): string {
   return url.replace(/\blocalhost\b|127\.0\.0\.1/g, 'host.docker.internal');
 }
 
-function isPrivateUrl(urlStr: string): boolean {
-  let parsed: URL;
-  try {
-    parsed = new URL(urlStr);
-  } catch {
-    return true;
-  }
+const VALID_PROVIDER_IDS = new Set([
+  'openai', 'anthropic', 'google', 'venice', 'openrouter', 'ollama', 'grok',
+  'deepseek', 'mistral', 'groq', 'cerebras', 'fireworks', 'togetherai',
+  'deepinfra', 'perplexity', 'nvidia', 'minimax', 'moonshot', 'scaleway',
+  'nebius', 'ovhcloud', 'huggingface',
+]);
 
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    return true;
-  }
+const VALID_CHANNEL_TYPES = new Set(['telegram', 'discord']);
 
-  const hostname = parsed.hostname.toLowerCase();
+const MODEL_REGEX = /^[a-zA-Z0-9._:/-]{1,128}$/;
 
-  if (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname === '::1' ||
-    hostname === '[::1]' ||
-    hostname === '0.0.0.0' ||
-    hostname.endsWith('.local') ||
-    hostname.endsWith('.internal')
-  ) {
-    return true;
-  }
+function isPrivateIp(ip: string): boolean {
+  // Handle IPv6-mapped IPv4 (e.g., ::ffff:127.0.0.1)
+  const v4Mapped = ip.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+  const normalizedIp = v4Mapped ? v4Mapped[1] : ip;
 
-  const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  // IPv6 loopback
+  if (normalizedIp === '::1') return true;
+
+  // IPv6 link-local
+  if (normalizedIp.toLowerCase().startsWith('fe80:')) return true;
+
+  // IPv6 unique local (fc00::/7)
+  const firstChar = normalizedIp.toLowerCase();
+  if (firstChar.startsWith('fc') || firstChar.startsWith('fd')) return true;
+
+  const ipv4Match = normalizedIp.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (ipv4Match) {
     const [, a, b, c, d] = ipv4Match.map(Number);
     if (a === 10) return true;
@@ -155,6 +156,90 @@ function isPrivateUrl(urlStr: string): boolean {
   }
 
   return false;
+}
+
+function isPrivateUrl(urlStr: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(urlStr);
+  } catch {
+    return true;
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    return true;
+  }
+
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+
+  if (
+    hostname === 'localhost' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.local') ||
+    hostname.endsWith('.internal')
+  ) {
+    return true;
+  }
+
+  if (isPrivateIp(hostname)) return true;
+
+  return false;
+}
+
+const MAX_RESPONSE_BODY_BYTES = 1024 * 1024; // 1MB
+
+async function readLimitedBody(response: Response, maxBytes: number): Promise<string> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      reader.cancel();
+      throw new Error('Response body exceeds size limit');
+    }
+    chunks.push(value);
+  }
+
+  const combined = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(combined);
+}
+
+async function resolveAndValidateUrl(urlStr: string): Promise<void> {
+  const parsed = new URL(urlStr);
+  const hostname = parsed.hostname.replace(/^\[|\]$/g, '');
+
+  // If hostname is already an IP literal, isPrivateUrl already checked it
+  if (/^[\d.]+$/.test(hostname) || hostname.includes(':')) return;
+
+  let addresses: string[];
+  try {
+    const results4 = await dns.resolve4(hostname).catch(() => [] as string[]);
+    const results6 = await dns.resolve6(hostname).catch(() => [] as string[]);
+    addresses = [...results4, ...results6];
+  } catch {
+    throw new Error('DNS resolution failed');
+  }
+
+  if (addresses.length === 0) {
+    throw new Error('DNS resolution returned no addresses');
+  }
+
+  for (const addr of addresses) {
+    if (isPrivateIp(addr)) {
+      throw new Error('Resolved address is private');
+    }
+  }
 }
 
 async function resolveHostPaths(config: ReturnType<typeof getConfig>): Promise<{
@@ -343,6 +428,24 @@ export async function buildServer(): Promise<FastifyInstance> {
     if (!body.channels || body.channels.length === 0) {
       reply.code(400);
       return { error: 'At least one channel is required' };
+    }
+
+    for (const provider of body.providers) {
+      if (!VALID_PROVIDER_IDS.has(provider.providerId)) {
+        reply.code(400);
+        return { error: `Invalid provider: ${provider.providerId}` };
+      }
+      if (!MODEL_REGEX.test(provider.model)) {
+        reply.code(400);
+        return { error: `Invalid model name: ${provider.model}` };
+      }
+    }
+
+    for (const channel of body.channels) {
+      if (!VALID_CHANNEL_TYPES.has(channel.channelType)) {
+        reply.code(400);
+        return { error: `Invalid channel type: ${channel.channelType}` };
+      }
     }
 
     // Check for duplicate hostname
@@ -673,17 +776,19 @@ export async function buildServer(): Promise<FastifyInstance> {
       return { error: 'Requests to private/internal addresses are not allowed' };
     }
 
+    const fetchBase = toDockerHostUrl(baseUrl);
+
+    if (isPrivateUrl(fetchBase)) {
+      reply.code(400);
+      return { error: 'Requests to private/internal addresses are not allowed' };
+    }
+
+    const url = fetchBase.replace(/\/+$/, '') + '/models';
+    const controller = new AbortController();
+    const timeout = setTimeout(() => { controller.abort(); }, 5000);
+
     try {
-      const fetchBase = toDockerHostUrl(baseUrl);
-
-      if (isPrivateUrl(fetchBase)) {
-        reply.code(400);
-        return { error: 'Requests to private/internal addresses are not allowed' };
-      }
-
-      const url = fetchBase.replace(/\/+$/, '') + '/models';
-      const controller = new AbortController();
-      const timeout = setTimeout(() => { controller.abort(); }, 5000);
+      await resolveAndValidateUrl(url);
 
       const headers: Record<string, string> = {};
       if (request.body.apiKey) {
@@ -691,17 +796,19 @@ export async function buildServer(): Promise<FastifyInstance> {
       }
 
       const response = await fetch(url, { signal: controller.signal, headers });
-      clearTimeout(timeout);
 
       if (!response.ok) {
         return { models: [] };
       }
 
-      const data = await response.json() as { data?: { id: string }[] };
+      const bodyText = await readLimitedBody(response, MAX_RESPONSE_BODY_BYTES);
+      const data = JSON.parse(bodyText) as { data?: { id: string }[] };
       const models = (data.data ?? []).map((m: { id: string }) => m.id);
       return { models };
     } catch {
       return { models: [] };
+    } finally {
+      clearTimeout(timeout);
     }
   });
 
