@@ -88,6 +88,68 @@ export function getApiTypeForProvider(provider: string): string {
 }
 
 /**
+ * Map provider to default embedding model.
+ * null = provider has no OpenAI-compatible /embeddings endpoint.
+ */
+const OPENAI_EMBED = 'text-embedding-3-small';
+const NOMIC_EMBED = 'nomic-embed-text';
+
+export const EMBEDDING_MODELS: Record<string, string | null> = {
+  openai: OPENAI_EMBED,
+  mistral: 'mistral-embed',
+  deepseek: OPENAI_EMBED,
+  ollama: NOMIC_EMBED,
+  fireworks: NOMIC_EMBED,
+  togetherai: 'togethercomputer/m2-bert-80M-8k-retrieval',
+  deepinfra: 'BAAI/bge-large-en-v1.5',
+  nvidia: 'NV-Embed-QA',
+  grok: OPENAI_EMBED,
+  nebius: OPENAI_EMBED,
+  scaleway: OPENAI_EMBED,
+  huggingface: 'sentence-transformers/all-MiniLM-L6-v2',
+  minimax: 'embo-01',
+  venice: OPENAI_EMBED,
+  openrouter: `openai/${OPENAI_EMBED}`,
+  // No embedding support
+  anthropic: null,
+  google: null,
+  groq: null,
+  cerebras: null,
+  perplexity: null,
+  moonshot: null,
+  ovhcloud: null,
+};
+
+export type MemorySearchConfig =
+  | { enabled: false }
+  | { provider: 'openai'; model: string; remote: { baseUrl: string; apiKey: string } };
+
+/**
+ * Build memorySearch config for openclaw.json.
+ * Returns embedding endpoint config for providers with /embeddings support,
+ * or { enabled: false } for providers without it.
+ */
+export function getMemorySearchConfig(
+  provider: string,
+  proxy?: ProxyConfig,
+): MemorySearchConfig {
+  const embeddingModel = EMBEDDING_MODELS[provider];
+
+  if (!embeddingModel || !proxy) {
+    return { enabled: false };
+  }
+
+  return {
+    provider: 'openai',
+    model: embeddingModel,
+    remote: {
+      baseUrl: proxy.baseUrl,
+      apiKey: proxy.token,
+    },
+  };
+}
+
+/**
  * Generate openclaw.json configuration.
  * Follows OpenClaw's expected config structure for gateway mode.
  * When proxy is configured, uses proxy baseUrl instead of direct API access.
@@ -142,6 +204,7 @@ function generateOpenclawConfig(config: BotWorkspaceConfig): object {
           primary: modelSpec,
         },
         workspace: '/app/botdata/workspace',
+        memorySearch: getMemorySearchConfig(config.aiProvider, config.proxy),
       },
     },
     ...(modelsConfig && { models: modelsConfig }),

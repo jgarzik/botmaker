@@ -3,7 +3,7 @@ import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
-import { createBotWorkspace, getBotWorkspacePath, deleteBotWorkspace, getApiTypeForProvider, type BotWorkspaceConfig } from './templates.js';
+import { createBotWorkspace, getBotWorkspacePath, deleteBotWorkspace, getApiTypeForProvider, getMemorySearchConfig, type BotWorkspaceConfig } from './templates.js';
 
 describe('templates', () => {
   let testDir: string;
@@ -60,6 +60,37 @@ describe('templates', () => {
     });
   });
 
+  describe('getMemorySearchConfig', () => {
+    const proxy = { baseUrl: 'http://proxy:9101/v1/openai', token: 'tok-123' };
+
+    it.each([
+      ['openai', 'text-embedding-3-small'],
+      ['mistral', 'mistral-embed'],
+      ['ollama', 'nomic-embed-text'],
+      ['deepseek', 'text-embedding-3-small'],
+    ])('%s with proxy returns embedding model %s', (provider, model) => {
+      expect(getMemorySearchConfig(provider, proxy)).toEqual({
+        provider: 'openai',
+        model,
+        remote: { baseUrl: proxy.baseUrl, apiKey: proxy.token },
+      });
+    });
+
+    it.each([
+      'anthropic', 'google', 'groq', 'cerebras', 'perplexity', 'moonshot', 'ovhcloud',
+    ])('%s returns disabled', (provider) => {
+      expect(getMemorySearchConfig(provider, proxy)).toEqual({ enabled: false });
+    });
+
+    it('unknown provider returns disabled', () => {
+      expect(getMemorySearchConfig('nonexistent', proxy)).toEqual({ enabled: false });
+    });
+
+    it('no proxy returns disabled even for supported provider', () => {
+      expect(getMemorySearchConfig('openai')).toEqual({ enabled: false });
+    });
+  });
+
   describe('getBotWorkspacePath', () => {
     it('should return correct path', () => {
       const result = getBotWorkspacePath('/data', 'my-bot');
@@ -111,7 +142,9 @@ describe('templates', () => {
         controlUi: { allowInsecureAuth: true },
       });
       expect((openclawConfig.channels as Record<string, unknown>).telegram).toEqual({ enabled: true });
-      expect(((openclawConfig.agents as Record<string, unknown>).defaults as Record<string, unknown>).model).toEqual({ primary: 'openai/gpt-4' });
+      const defaults = (openclawConfig.agents as Record<string, unknown>).defaults as Record<string, unknown>;
+      expect(defaults.model).toEqual({ primary: 'openai/gpt-4' });
+      expect(defaults.memorySearch).toEqual({ enabled: false });
       expect(openclawConfig.models).toBeUndefined();
     });
 
@@ -135,6 +168,16 @@ describe('templates', () => {
             api: 'openai-responses',
             models: [{ id: 'gpt-4', name: 'gpt-4' }],
           },
+        },
+      });
+
+      const defaults = (openclawConfig.agents as Record<string, unknown>).defaults as Record<string, unknown>;
+      expect(defaults.memorySearch).toEqual({
+        provider: 'openai',
+        model: 'text-embedding-3-small',
+        remote: {
+          baseUrl: 'http://proxy:9101/v1',
+          apiKey: 'proxy-token-123',
         },
       });
     });
@@ -202,6 +245,9 @@ describe('templates', () => {
           },
         },
       });
+
+      const defaults = (openclawConfig.agents as Record<string, unknown>).defaults as Record<string, unknown>;
+      expect(defaults.memorySearch).toEqual({ enabled: false });
     });
 
     it('should use openai-completions API type for venice with proxy', () => {
