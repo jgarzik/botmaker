@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git ca-certificates curl \
     pkg-config cmake ninja-build \
+    autoconf automake libtool meson \
     # Debugging
     gdb strace \
     # Python
@@ -21,13 +22,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Dev libraries
     libssl-dev libffi-dev \
     zlib1g-dev libbz2-dev liblzma-dev libreadline-dev libsqlite3-dev \
+    libxml2-dev libxslt-dev \
+    libcurl4-openssl-dev \
+    libncurses-dev \
+    libpcre2-dev \
+    libprotobuf-dev protobuf-compiler \
     # CLI utilities
     jq ripgrep fd-find less \
-    unzip zip xz-utils \
+    unzip zip xz-utils zstd \
+    wget tree file patch \
+    openssh-client rsync \
+    # HDL/FPGA tools
+    yosys ghdl \
     # Process/network tools
     procps lsof \
     iproute2 netcat-openbsd dnsutils \
  && rm -rf /var/lib/apt/lists/*
+
+# Install Rust toolchain via rustup (APT packages are severely outdated)
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --default-toolchain stable \
+ && rustc --version \
+ && chmod -R a+w $RUSTUP_HOME $CARGO_HOME
 
 # Make openclaw CLI available on PATH
 RUN ln -s /app/openclaw.mjs /usr/local/bin/openclaw

@@ -218,6 +218,61 @@ describe('/api/models/discover', () => {
     await server.close();
   });
 
+  it('should return models for local Ollama URL', async () => {
+    const fakeModels = { data: [{ id: 'qwen3-coder:30b' }, { id: 'nomic-embed-text' }] };
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(fakeModels));
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(jsonBytes, { status: 200, headers: { 'content-type': 'application/json' } }),
+    );
+    vi.stubGlobal('fetch', mockFetch);
+
+    const server = await createTestServer();
+    const token = await getAuthToken(server);
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/models/discover',
+      payload: { baseUrl: 'http://localhost:11434/v1' },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body) as { models: string[] };
+    expect(body.models).toContain('qwen3-coder:30b');
+    expect(body.models).toContain('nomic-embed-text');
+    expect(mockFetch).toHaveBeenCalledOnce();
+    // localhost is rewritten to host.docker.internal by toDockerHostUrl
+    expect(mockFetch.mock.calls[0][0]).toBe('http://host.docker.internal:11434/v1/models');
+
+    vi.unstubAllGlobals();
+    await server.close();
+  });
+
+  it('should return models for host.docker.internal URL', async () => {
+    const fakeModels = { data: [{ id: 'llama3:8b' }] };
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(fakeModels));
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(jsonBytes, { status: 200, headers: { 'content-type': 'application/json' } }),
+    );
+    vi.stubGlobal('fetch', mockFetch);
+
+    const server = await createTestServer();
+    const token = await getAuthToken(server);
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/models/discover',
+      payload: { baseUrl: 'http://host.docker.internal:11434/v1' },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body) as { models: string[] };
+    expect(body.models).toContain('llama3:8b');
+    expect(mockFetch).toHaveBeenCalledOnce();
+    // URL should NOT be rewritten by resolveAndValidateUrl — passed through directly
+    expect(mockFetch.mock.calls[0][0]).toBe('http://host.docker.internal:11434/v1/models');
+
+    vi.unstubAllGlobals();
+    await server.close();
+  });
+
   it('should reject invalid URL', async () => {
     const server = await createTestServer();
     const token = await getAuthToken(server);

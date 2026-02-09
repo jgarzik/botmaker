@@ -293,16 +293,20 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // Register security headers
   await server.register(fastifyHelmet, {
+    // BotMaker runs on plain HTTP behind a LAN; HSTS and upgrade-insecure-requests
+    // cause browsers to silently fail when there is no TLS terminator.
+    hsts: false,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:"],
         connectSrc: ["'self'"],
-        fontSrc: ["'self'"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
+        upgradeInsecureRequests: null,
       },
     },
   });
@@ -803,7 +807,17 @@ export async function buildServer(): Promise<FastifyInstance> {
     const timeout = setTimeout(() => { controller.abort(); }, 5000);
 
     try {
-      const { resolvedUrl, originalHost } = await resolveAndValidateUrl(url);
+      let resolvedUrl: string;
+      let originalHost: string;
+
+      if (isLocal) {
+        // Local URLs are explicitly allowlisted — skip DNS resolution.
+        // host.docker.internal is in /etc/hosts only; dns.resolve4() can't find it.
+        resolvedUrl = url;
+        originalHost = new URL(url).hostname;
+      } else {
+        ({ resolvedUrl, originalHost } = await resolveAndValidateUrl(url));
+      }
 
       const headers: Record<string, string> = { Host: originalHost };
       if (request.body.apiKey) {
