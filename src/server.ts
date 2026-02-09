@@ -124,7 +124,7 @@ const VALID_PROVIDER_IDS = new Set([
 
 const VALID_CHANNEL_TYPES = new Set(['telegram', 'discord']);
 
-const MODEL_REGEX = /^[a-zA-Z0-9._:/-]{1,128}$/;
+const MODEL_REGEX = /^(?!.*\.\.)[a-zA-Z0-9._:/-]{1,128}$/;
 
 function isPrivateIp(ip: string): boolean {
   // Handle IPv6-mapped IPv4 (e.g., ::ffff:127.0.0.1)
@@ -136,10 +136,16 @@ function isPrivateIp(ip: string): boolean {
   const lowerIp = normalizedIp.toLowerCase();
   if (lowerIp.startsWith('fe80:')) return true;
   if (lowerIp.startsWith('fc') || lowerIp.startsWith('fd')) return true;
+  if (lowerIp === '::') return true;
+  if (lowerIp.startsWith('2001:db8:')) return true;
+  if (lowerIp.startsWith('2001:0:')) return true;
+  if (lowerIp.startsWith('100:')) return true;
+  if (lowerIp.startsWith('64:ff9b:')) return true;
 
   const ipv4Match = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(normalizedIp);
   if (ipv4Match) {
     const [, a, b, c, d] = ipv4Match.map(Number);
+    if (a > 255 || b > 255 || c > 255 || d > 255) return true;
     if (a === 10) return true;
     if (a === 172 && b >= 16 && b <= 31) return true;
     if (a === 192 && b === 168) return true;
