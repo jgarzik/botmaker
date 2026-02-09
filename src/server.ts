@@ -115,6 +115,16 @@ function toDockerHostUrl(url: string): string {
   return url.replace(/\blocalhost\b|127\.0\.0\.1/g, 'host.docker.internal');
 }
 
+/** Check if a URL targets a local discovery host (localhost, 127.0.0.1, host.docker.internal). */
+function isLocalDiscoveryUrl(urlStr: string): boolean {
+  try {
+    const hostname = new URL(urlStr).hostname.toLowerCase();
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'host.docker.internal';
+  } catch {
+    return false;
+  }
+}
+
 const VALID_PROVIDER_IDS = new Set([
   'openai', 'anthropic', 'google', 'venice', 'openrouter', 'ollama', 'grok',
   'deepseek', 'mistral', 'groq', 'cerebras', 'fireworks', 'togetherai',
@@ -122,7 +132,13 @@ const VALID_PROVIDER_IDS = new Set([
   'nebius', 'ovhcloud', 'huggingface',
 ]);
 
-const VALID_CHANNEL_TYPES = new Set(['telegram', 'discord']);
+const VALID_CHANNEL_TYPES = new Set([
+  'telegram', 'discord', 'slack', 'signal', 'whatsapp', 'matrix', 'nostr',
+  'twitter', 'facebook', 'instagram', 'teams', 'line', 'wechat', 'viber',
+  'kik', 'twitch', 'reddit', 'mastodon', 'bluesky', 'rocketchat',
+  'mattermost', 'zulip', 'irc', 'xmpp', 'sms', 'email', 'googlechat',
+  'webex', 'web', 'webhook',
+]);
 
 const MODEL_REGEX = /^(?!.*\.\.)[a-zA-Z0-9._:/-]{1,128}$/;
 
@@ -240,11 +256,9 @@ async function resolveAndValidateUrl(urlStr: string): Promise<{ resolvedUrl: str
     }
   }
 
-  // Pin to the first resolved IP to prevent DNS rebinding
-  const pinnedIp = addresses[0];
-  const pinnedHost = pinnedIp.includes(':') ? `[${pinnedIp}]` : pinnedIp;
-  parsed.hostname = pinnedHost;
-  return { resolvedUrl: parsed.toString(), originalHost: hostname };
+  // All resolved addresses validated as non-private.
+  // Preserve original hostname so HTTPS TLS/SNI and cert validation work.
+  return { resolvedUrl: urlStr, originalHost: hostname };
 }
 
 async function resolveHostPaths(config: ReturnType<typeof getConfig>): Promise<{
@@ -776,14 +790,10 @@ export async function buildServer(): Promise<FastifyInstance> {
       return { error: 'Missing baseUrl in request body' };
     }
 
-    if (isPrivateUrl(baseUrl)) {
-      reply.code(400);
-      return { error: 'Requests to private/internal addresses are not allowed' };
-    }
-
     const fetchBase = toDockerHostUrl(baseUrl);
+    const isLocal = isLocalDiscoveryUrl(baseUrl) || isLocalDiscoveryUrl(fetchBase);
 
-    if (isPrivateUrl(fetchBase)) {
+    if (!isLocal && (isPrivateUrl(baseUrl) || isPrivateUrl(fetchBase))) {
       reply.code(400);
       return { error: 'Requests to private/internal addresses are not allowed' };
     }
