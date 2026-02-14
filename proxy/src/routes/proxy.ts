@@ -22,8 +22,10 @@ export function registerProxyRoutes(
     }
     const vendorConfig = VENDOR_CONFIGS[vendor];
 
-    // Extract bot token from either Authorization header or x-api-key
-    // This supports both OpenAI-style (Bearer token) and Anthropic-style (x-api-key) auth
+    // Extract bot token from auth header — each vendor SDK sends it differently
+    // OpenAI-style: Authorization: Bearer <token>
+    // Anthropic-style: x-api-key: <token>
+    // Google-style: x-goog-api-key: <token>
     let botToken: string | undefined;
 
     const auth = req.headers.authorization;
@@ -31,6 +33,8 @@ export function registerProxyRoutes(
       botToken = auth.slice(7);
     } else if (req.headers['x-api-key'] && typeof req.headers['x-api-key'] === 'string') {
       botToken = req.headers['x-api-key'];
+    } else if (req.headers['x-goog-api-key'] && typeof req.headers['x-goog-api-key'] === 'string') {
+      botToken = req.headers['x-goog-api-key'];
     }
 
     if (!botToken) {
