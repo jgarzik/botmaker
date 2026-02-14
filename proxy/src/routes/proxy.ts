@@ -13,7 +13,10 @@ export function registerProxyRoutes(
   // Catch-all route for proxy requests: /v1/{vendor}/{path...}
   app.all('/v1/:vendor/*', async (req: FastifyRequest, reply: FastifyReply) => {
     const { vendor } = req.params as { vendor: string; '*': string };
-    const path = '/' + (req.params as { '*': string })['*'];
+    const rawPath = '/' + (req.params as { '*': string })['*'];
+    // Preserve query string — Fastify strips it from wildcard params
+    const queryString = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    const path = rawPath + queryString;
 
     // Validate vendor
     if (!(vendor in VENDOR_CONFIGS)) {
