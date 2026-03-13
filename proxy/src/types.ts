@@ -33,6 +33,7 @@ export interface VendorConfig {
   protocol?: 'http' | 'https'; // default: 'https'
   noAuth?: boolean;            // Skip API key injection (e.g., local Ollama)
   forceNonStreaming?: boolean;  // Strip stream:true, convert response to SSE
+  forwardHeaders?: string[];   // Extra vendor-specific headers to forward from client
 }
 
 const VENDOR_CONFIGS: Record<string, VendorConfig> = {
@@ -47,6 +48,7 @@ const VENDOR_CONFIGS: Record<string, VendorConfig> = {
     basePath: '', // OpenClaw's anthropic-messages API includes /v1 in its path
     authHeader: 'x-api-key',
     authFormat: (key) => key,
+    forwardHeaders: ['anthropic-version', 'anthropic-beta'],
   },
   venice: {
     host: 'api.venice.ai',
